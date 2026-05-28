@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}Manage Reels – Admin{% endblock %}
+{% block content %}
+<style>
+.adm{padding:100px 3% 60px;max-width:1100px;margin:0 auto}
+.adm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.adm-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--dark)}
+.adm-nav{display:flex;gap:10px;flex-wrap:wrap}
+.adm-nav a{padding:9px 20px;border-radius:50px;font-size:.82rem;font-weight:600;text-decoration:none;transition:.2s;background:var(--cream2);color:var(--dark)}
+.adm-nav a.active,.adm-nav a:hover{background:var(--pink);color:#fff}
+
+/* Upload card */
+.upload-card{background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:28px}
+.upload-card h2{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--dark);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--cream2)}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-weight:600;font-size:.85rem;color:var(--dark);margin-bottom:6px}
+.form-input,.form-textarea{width:100%;padding:12px 16px;border:2px solid var(--cream2);border-radius:12px;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:.2s}
+.form-input:focus,.form-textarea:focus{border-color:var(--pink)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-hint{font-size:.75rem;color:var(--gray);margin-top:4px}
+
+/* Drop zone */
+.drop-zone{
+  border:2px dashed rgba(233,30,140,.3);
+  border-radius:14px;
+  padding:32px;
+  text-align:center;
+  background:var(--pink-pale);
+  cursor:pointer;
+  transition:.3s;
+  position:relative;
+}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--pink);background:#fce4ec}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-zone-icon{font-size:2.5rem;margin-bottom:8px}
+.drop-zone-text{font-size:.88rem;color:var(--gray)}
+.drop-zone-text strong{color:var(--pink)}
+#filePreview{display:none;margin-top:12px}
+#filePreview video{max-width:100%;border-radius:10px;max-height:200px}
+#fileName{font-size:.8rem;color:var(--pink);font-weight:600;margin-top:6px}
+
+/* Reels grid */
+.reels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.reel-admin-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.reel-admin-card video{width:100%;height:160px;object-fit:cover;background:#000;display:block}
+.reel-admin-info{padding:12px}
+.reel-admin-title{font-weight:600;font-size:.82rem;color:var(--dark);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reel-admin-date{font-size:.72rem;color:var(--gray);margin-bottom:10px}
+.btn-del{background:#fce4ec;color:#c62828;border:none;padding:6px 14px;border-radius:50px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%}
+.btn-del:hover{background:#c62828;color:#fff}
+
+.empty-state{text-align:center;padding:40px;color:var(--gray);grid-column:1/-1}
+</style>
+
+<div class="adm">
+  <div class="adm-header">
+    <div class="adm-title">🎬 Manage Reels</div>
+    <nav class="adm-nav">
+      <a href="/admin">Dashboard</a>
+      <a href="/admin/products">Products</a>
+      <a href="/admin/orders">Orders</a>
+      <a href="/admin/reels" class="active">Reels</a>
+      <a href="/reels" target="_blank">View Page ↗</a>
+    </nav>
+  </div>
+
+  <!-- Upload form -->
+  <div class="upload-card">
+    <h2>➕ Upload New Reel</h2>
+    <form action="/admin/reels/add" method="POST" enctype="multipart/form-data">
+
+      <div class="form-group">
+        <label class="form-label">Video File *</label>
+        <div class="drop-zone" id="dropZone">
+          <input type="file" name="video" accept="video/*" required
+                 onchange="previewVideo(this)" id="videoInput">
+          <div class="drop-zone-icon">🎬</div>
+          <div class="drop-zone-text">
+            <strong>Click to upload</strong> or drag & drop<br>
+            MP4, MOV, WEBM · Max 50MB
+          </div>
+          <div id="filePreview">
+            <video id="previewVid" controls muted></video>
+            <div id="fileName"></div>
+          </div>
+        </div>
+        <div class="form-hint">Best size: 9:16 ratio (like Instagram reels)</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Title <span style="color:var(--gray);font-weight:400">(optional)</span></label>
+        <input type="text" name="title" class="form-input"
+               placeholder="e.g. Rosette Bag Tutorial">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Caption <span style="color:var(--gray);font-weight:400">(optional)</span></label>
+        <textarea name="caption" class="form-textarea"
+                  placeholder="Describe the reel..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+        📤 Upload Reel
+      </button>
+    </form>
+  </div>
+
+  <!-- Existing reels -->
+  <div class="upload-card">
+    <h2>📽️ All Reels ({{ reels|length }})</h2>
+    <div class="reels-grid">
+      {% if reels %}
+        {% for reel in reels %}
+        <div class="reel-admin-card">
+          <video muted preload="metadata">
+            <source src="/static/reels/{{ reel.filename }}" type="video/mp4">
+          </video>
+          <div class="reel-admin-info">
+            <div class="reel-admin-title">{{ reel.title or reel.filename }}</div>
+            <div class="reel-admin-date">{{ reel.created_at[:10] }}</div>
+            <form action="/admin/reels/delete/{{ reel.id }}" method="POST"
+                  onsubmit="return confirm('Delete this reel?')">
+              <button type="submit" class="btn-del">🗑 Delete</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="empty-state">No reels uploaded yet. Upload your first one above!</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+function previewVideo(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const url  = URL.createObjectURL(file);
+    const vid  = document.getElementById('previewVid');
+    vid.src    = url;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('filePreview').style.display = 'block';
+    document.querySelector('.drop-zone-icon').style.display = 'none';
+    document.querySelector('.drop-zone-text').style.display = 'none';
+  }
+}
+
+// Drag & drop styling
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop',      e => { e.preventDefault(); dz.classList.remove('drag-over');
+  const files = e.dataTransfer.files;
+  if (files[0]) { document.getElementById('videoInput').files = files; previewVideo({files}); }
+});
+</script>
+{% endblock %}

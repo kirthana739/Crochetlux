@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if product else 'Add' }} Product – Admin{% endblock %}
+{% block content %}
+<style>
+.adm{padding:100px 3% 60px;max-width:800px;margin:0 auto}
+.adm-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--dark);margin-bottom:24px}
+.form-card{background:#fff;border-radius:20px;padding:36px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-weight:600;font-size:.85rem;color:var(--dark);margin-bottom:6px}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:12px 16px;border:2px solid var(--cream2);border-radius:12px;
+  font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;
+  background:#fff;box-sizing:border-box;transition:.2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--pink)}
+.form-textarea{resize:vertical;min-height:100px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-hint{font-size:.75rem;color:var(--gray);margin-top:4px}
+
+.img-preview-box{width:120px;height:120px;border-radius:14px;overflow:hidden;
+  background:var(--pink-pale);display:flex;align-items:center;justify-content:center;
+  font-size:3rem;border:2px dashed var(--cream2);margin-bottom:10px}
+.img-preview-box img{width:100%;height:100%;object-fit:cover}
+
+.toggle-wrap{display:flex;align-items:center;gap:10px}
+.toggle{position:relative;width:46px;height:26px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:var(--cream2);border-radius:50px;transition:.3s}
+.slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--pink)}
+input:checked+.slider:before{transform:translateX(20px)}
+</style>
+
+<div class="adm">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+    <a href="/admin/products" style="color:var(--pink);font-size:.9rem;text-decoration:none">← Back to Products</a>
+  </div>
+  <div class="adm-title">{{ '✏️ Edit Product' if product else '➕ Add New Product' }}</div>
+
+  <div class="form-card">
+    <form action="{{ '/admin/product/edit/'+product.id|string if product else '/admin/product/add' }}"
+          method="POST" enctype="multipart/form-data">
+
+      <div class="form-group">
+        <label class="form-label">Product Name *</label>
+        <input type="text" name="name" class="form-input" required
+               value="{{ product.name if product else '' }}" placeholder="e.g. Rosette Dream Bag">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-textarea"
+                  placeholder="Describe the product…">{{ product.description if product else '' }}</textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Price (₹) *</label>
+          <input type="number" name="price" class="form-input" required step="0.01" min="0"
+                 value="{{ product.price if product else '' }}" placeholder="1299">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Original Price (₹) <span style="color:var(--gray);font-weight:400">(for discount)</span></label>
+          <input type="number" name="original_price" class="form-input" step="0.01" min="0"
+                 value="{{ product.original_price if product else '' }}" placeholder="1799">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select name="category" class="form-select" required>
+            <option value="">Select category</option>
+            {% for cat in ['Bags','Clothing','Toys','Home','Accessories'] %}
+            <option value="{{ cat }}"
+              {{ 'selected' if product and product.category == cat }}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock *</label>
+          <input type="number" name="stock" class="form-input" required min="0"
+                 value="{{ product.stock if product else '0' }}" placeholder="10">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Product Image</label>
+        {% if product and product.image %}
+        <div class="img-preview-box" id="imgPreview">
+          <img src="/static/images/{{ product.image }}" id="previewImg"
+               onerror="this.parentElement.innerHTML='🧶'">
+        </div>
+        {% else %}
+        <div class="img-preview-box" id="imgPreview">
+          <img id="previewImg" style="display:none"><span id="imgPlaceholder">🧶</span>
+        </div>
+        {% endif %}
+        <input type="file" name="image" class="form-input" accept="image/*"
+               onchange="previewImage(this)" style="padding:8px">
+        <div class="form-hint">PNG, JPG, WEBP up to 5MB. Leave blank to keep existing image.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Featured Product</label>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" name="is_featured" value="1"
+                   {{ 'checked' if product and product.is_featured }}>
+            <span class="slider"></span>
+          </label>
+          <span style="font-size:.85rem;color:var(--gray)">Show on homepage</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center">
+          {{ '✅ Save Changes' if product else '➕ Add Product' }}
+        </button>
+        <a href="/admin/products" class="btn btn-cream" style="flex:1;justify-content:center">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+function previewImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('previewImg');
+      const ph  = document.getElementById('imgPlaceholder');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      if (ph) ph.style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

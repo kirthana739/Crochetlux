@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Order Placed! – CrochetLux{% endblock %}
+{% block content %}
+<style>
+.success-wrapper{padding:120px 5% 80px;text-align:center;max-width:700px;margin:0 auto}
+.success-icon{font-size:6rem;animation:popIn .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.success-title{font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--dark);margin:20px 0 10px}
+.success-sub{color:var(--gray);font-size:1rem;line-height:1.7;margin-bottom:30px}
+.order-card{background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.07);text-align:left;margin-bottom:24px}
+.order-card h4{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:16px;color:var(--dark)}
+.order-item-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--cream2)}
+.order-item-row:last-child{border-bottom:none}
+.success-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+</style>
+<div class="success-wrapper">
+  <div class="success-icon">🎉</div>
+  <div class="success-title">Order Placed!</div>
+  <p class="success-sub">
+    Thank you for your purchase! Your order <strong>#{{ order['id'] }}</strong> has been confirmed.
+    We'll send you a confirmation email shortly.<br>
+    <strong>Payment:</strong> {{ order['payment_method']|upper }} · 
+    <strong>Total:</strong> ₹{{ "%.0f"|format(order['total']) }}
+  </p>
+  <div class="order-card">
+    <h4>Items Ordered</h4>
+    {% for item in items %}
+    <div class="order-item-row">
+      <span style="font-size:1.5rem">{% if item['image'] %}🧶{% else %}🧶{% endif %}</span>
+      <span style="flex:1;font-size:.9rem">{{ item['name'] }} × {{ item['quantity'] }}</span>
+      <span style="font-weight:700;color:var(--pink)">₹{{ "%.0f"|format(item['price']*item['quantity']) }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="success-actions">
+    <a href="/orders" class="btn btn-primary">My Orders</a>
+    <a href="/shop" class="btn btn-outline">Continue Shopping</a>
+  </div>
+</div>
+{% endblock %}

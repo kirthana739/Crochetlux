@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}My Orders – CrochetLux{% endblock %}
+{% block content %}
+<style>
+.orders-wrapper{padding:100px 5% 60px;max-width:900px;margin:0 auto}
+.page-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--dark);margin-bottom:30px}
+.order-card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.05);transition:.3s}
+.order-card:hover{box-shadow:var(--shadow)}
+.order-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.order-id{font-weight:700;font-size:1rem}
+.order-date{font-size:.78rem;color:var(--gray)}
+.order-status{padding:5px 14px;border-radius:50px;font-size:.75rem;font-weight:600;text-transform:capitalize}
+.order-status[data-status="placed"]{background:#e3f2fd;color:#1565c0}
+.order-status[data-status="processing"]{background:#fff3e0;color:#e65100}
+.order-status[data-status="shipped"]{background:#e8eaf6;color:#3949ab}
+.order-status[data-status="delivered"]{background:#e8f5e9;color:#2e7d32}
+.order-status[data-status="cancelled"]{background:#fce4ec;color:#c62828}
+.order-details{display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;font-size:.85rem}
+.order-detail-item{display:flex;align-items:center;gap:6px;color:var(--gray)}
+.order-detail-item strong{color:var(--text)}
+.order-actions{display:flex;gap:10px;margin-top:14px}
+.pay-paid{color:#2e7d32;font-weight:600}
+.pay-pending{color:#e65100;font-weight:600}
+</style>
+
+<div class="orders-wrapper">
+  <h1 class="page-title">📦 My Orders</h1>
+  {% if orders %}
+    {% for o in orders %}
+    <div class="order-card">
+      <div class="order-header">
+        <div>
+          <div class="order-id">Order #{{ o['id'] }}</div>
+          <div class="order-date">Placed on {{ o['created_at'][:10] }}</div>
+        </div>
+        <span class="order-status" data-status="{{ o['order_status'] }}">{{ o['order_status']|title }}</span>
+      </div>
+      <div class="order-details">
+        <div class="order-detail-item">
+          <i class="fa-solid fa-box"></i>
+          <span>{{ o['item_count'] }} item(s)</span>
+        </div>
+        <div class="order-detail-item">
+          <i class="fa-solid fa-indian-rupee-sign"></i>
+          <strong>₹{{ "%.0f"|format(o['total']) }}</strong>
+        </div>
+        <div class="order-detail-item">
+          <i class="fa-solid fa-credit-card"></i>
+          <span>{{ o['payment_method']|upper }}</span>
+        </div>
+        <div class="order-detail-item">
+          <i class="fa-solid fa-circle-check"></i>
+          <span class="{% if o['payment_status'] == 'paid' %}pay-paid{% else %}pay-pending{% endif %}">
+            {{ o['payment_status']|title }}
+          </span>
+        </div>
+      </div>
+      <div class="order-actions">
+        <a href="/order/{{ o['id'] }}" class="btn btn-outline" style="padding:8px 18px;font-size:.82rem">View Details</a>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div style="text-align:center;padding:80px 20px">
+    <div style="font-size:4rem;margin-bottom:16px">📦</div>
+    <h3 style="font-family:'Playfair Display',serif;margin-bottom:8px">No orders yet</h3>
+    <p style="color:var(--gray);margin-bottom:24px">Start shopping to see your orders here</p>
+    <a href="/shop" class="btn btn-primary">Shop Now</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

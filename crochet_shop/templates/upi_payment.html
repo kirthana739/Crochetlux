@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% block title %}Pay via UPI – CrochetLux{% endblock %}
+{% block content %}
+<style>
+.upi-wrapper{padding:120px 5% 80px;text-align:center;max-width:520px;margin:0 auto}
+.upi-card{background:#fff;border-radius:24px;padding:36px;box-shadow:0 20px 60px rgba(233,30,140,.15)}
+.upi-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--dark);margin-bottom:6px}
+.upi-amount{font-size:2.8rem;font-weight:700;color:var(--pink);margin:12px 0 4px}
+.upi-orderid{font-size:.8rem;color:var(--gray);margin-bottom:20px}
+
+/* Steps tabs */
+.step-tabs{display:flex;gap:0;border-radius:14px;overflow:hidden;border:2px solid var(--cream2);margin-bottom:24px}
+.step-tab{flex:1;padding:10px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;background:var(--cream2);color:var(--gray);transition:.2s}
+.step-tab.active{background:var(--pink);color:#fff}
+
+/* QR section */
+.qr-box{background:var(--pink-pale);border-radius:18px;padding:20px;margin-bottom:16px;display:inline-block}
+.qr-box img{width:200px;height:200px;border-radius:10px;display:block}
+.qr-label{font-size:.78rem;color:var(--gray);margin-top:10px}
+
+/* App buttons */
+.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.app-btn{background:var(--pink-pale);border-radius:14px;padding:14px 10px;text-align:center;
+  text-decoration:none;border:2px solid transparent;transition:.3s;display:block}
+.app-btn:hover{border-color:var(--pink);transform:translateY(-2px)}
+.app-btn-icon{font-size:1.8rem;display:block;margin-bottom:4px}
+.app-btn-name{font-size:.75rem;font-weight:600;color:var(--dark)}
+
+/* UPI ID copy box */
+.upi-id-box{background:var(--pink-pale);border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;margin:12px 0;gap:10px}
+.upi-id-text{font-weight:700;font-size:.9rem;color:var(--dark);word-break:break-all;text-align:left}
+
+/* Status badge */
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;
+  border-radius:50px;font-size:.78rem;font-weight:600;margin-bottom:16px}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-failed{background:#fce4ec;color:#c62828}
+
+/* Confirm section */
+#confirmSection{display:none;text-align:left;margin-top:4px}
+#confirmSection p{font-size:.83rem;color:var(--gray);margin-bottom:12px;line-height:1.6}
+.utr-input{width:100%;padding:12px 16px;border:2px solid rgba(233,30,140,.2);border-radius:12px;
+  font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;margin-bottom:10px}
+.utr-input:focus{border-color:var(--pink)}
+.utr-input.error{border-color:#e53935}
+#utrError{color:#e53935;font-size:.78rem;margin-bottom:10px;display:none}
+
+/* Success */
+#successSection{display:none;background:#e8f5e9;border-radius:16px;padding:24px;margin-top:12px}
+#successSection h3{color:#2e7d32;font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:6px}
+#successSection p{color:#388e3c;font-size:.83rem;margin-bottom:14px}
+.order-summary{background:rgba(255,255,255,.7);border-radius:10px;padding:12px;text-align:left;margin:10px 0;font-size:.83rem}
+.order-row{display:flex;justify-content:space-between;padding:3px 0;color:#555}
+.order-row.total{font-weight:700;color:#2e7d32;border-top:1px solid #c8e6c9;margin-top:6px;padding-top:8px}
+
+/* Failed */
+#failedSection{display:none;background:#fce4ec;border-radius:16px;padding:24px;margin-top:12px}
+#failedSection h3{color:#c62828;font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:6px}
+#failedSection p{color:#b71c1c;font-size:.83rem;margin-bottom:14px}
+
+/* Timer */
+.timer{font-size:.78rem;color:var(--gray);margin-top:8px}
+.timer span{font-weight:700;color:var(--pink)}
+
+.divider{display:flex;align-items:center;gap:10px;color:var(--gray);font-size:.78rem;margin:12px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--cream2)}
+</style>
+
+<div class="upi-wrapper">
+  <div class="upi-card">
+
+    <div style="font-size:2.5rem;margin-bottom:8px">💳</div>
+    <div class="upi-title">Complete Payment</div>
+    <div class="upi-amount">₹{{ "%.0f"|format(total) }}</div>
+    <div class="upi-orderid">Order #{{ order_id }}</div>
+
+    <!-- Status badge -->
+    <div id="statusBadge" class="status-badge badge-pending">⏳ Awaiting Payment</div>
+
+    <!-- Main payment area -->
+    <div id="paymentArea">
+
+      <!-- Tab switcher -->
+      <div class="step-tabs">
+        <button class="step-tab active" onclick="switchTab('qr',this)">📷 Scan QR</button>
+        <button class="step-tab" onclick="switchTab('apps',this)">📱 UPI Apps</button>
+        <button class="step-tab" onclick="switchTab('id',this)">🔗 UPI ID</button>
+      </div>
+
+      <!-- Tab 1: QR Code -->
+      <div id="tabQr">
+        <div class="qr-box">
+          <!-- QR encodes the UPI deep link so any scanner opens GPay/PhonePe etc. -->
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ upi_url|urlencode }}"
+               alt="UPI QR Code" id="qrImg">
+          <div class="qr-label">
+            Scan with <strong>Google Pay, PhonePe, Paytm</strong> or any UPI app
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--gray);margin-bottom:4px">
+          ✅ Opens your UPI app automatically with amount pre-filled
+        </div>
+      </div>
+
+      <!-- Tab 2: App deep links -->
+      <div id="tabApps" style="display:none">
+        <p style="font-size:.82rem;color:var(--gray);margin-bottom:14px">
+          Tap your app — amount will be pre-filled automatically:
+        </p>
+        <div class="app-grid">
+          <a href="{{ upi_url }}" class="app-btn" onclick="appTapped()">
+            <span class="app-btn-icon">🔵</span>
+            <div class="app-btn-name">Google Pay</div>
+          </a>
+          <a href="{{ upi_url }}" class="app-btn" onclick="appTapped()">
+            <span class="app-btn-icon">🟢</span>
+            <div class="app-btn-name">PhonePe</div>
+          </a>
+          <a href="{{ upi_url }}" class="app-btn" onclick="appTapped()">
+            <span class="app-btn-icon">💙</span>
+            <div class="app-btn-name">Paytm</div>
+          </a>
+          <a href="{{ upi_url }}" class="app-btn" onclick="appTapped()">
+            <span class="app-btn-icon">🏦</span>
+            <div class="app-btn-name">BHIM UPI</div>
+          </a>
+        </div>
+        <div class="timer" id="timerEl" style="display:none">
+          Session expires in <span id="countdown">10:00</span>
+        </div>
+      </div>
+
+      <!-- Tab 3: UPI ID manual -->
+      <div id="tabId" style="display:none">
+        <p style="font-size:.82rem;color:var(--gray);margin-bottom:10px">
+          Open any UPI app and pay to this UPI ID manually:
+        </p>
+        <div class="upi-id-box">
+          <div class="upi-id-text">kirthanaganeshkunder@okhdfcbank</div>
+          <button onclick="copyUPI()" class="btn btn-outline"
+                  style="padding:6px 14px;font-size:.75rem;white-space:nowrap">
+            📋 Copy
+          </button>
+        </div>
+        <div style="font-size:.78rem;color:var(--gray);text-align:left;line-height:1.7">
+          <strong>Amount to pay:</strong> ₹{{ "%.0f"|format(total) }}<br>
+          <strong>Name:</strong> CrochetLux<br>
+          <strong>Note:</strong> Order #{{ order_id }}
+        </div>
+      </div>
+
+      <div class="divider">after payment</div>
+
+      <!-- Confirm payment -->
+      <div id="confirmSection">
+        <p>Enter the <strong>UTR / Transaction ID</strong> from your UPI app receipt to confirm payment:</p>
+        <input type="text" id="utrInput" class="utr-input"
+               placeholder="12-digit UTR e.g. 426112345678"
+               maxlength="22"
+               oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase()">
+        <div id="utrError">⚠️ Please enter a valid UTR (min 10 characters)</div>
+        <button onclick="submitUTR()" class="btn btn-primary"
+                style="width:100%;justify-content:center" id="confirmBtn">
+          ✅ Confirm Payment
+        </button>
+        <button onclick="hideConfirm()"
+                style="background:none;border:none;color:var(--gray);font-size:.78rem;
+                       cursor:pointer;margin-top:8px;width:100%">
+          ← Cancel
+        </button>
+      </div>
+
+      <!-- Show confirm button (always visible) -->
+      <div id="showConfirmBtn">
+        <button onclick="showConfirm()" class="btn btn-primary"
+                style="width:100%;justify-content:center;margin-top:4px">
+          I've Paid → Confirm Payment
+        </button>
+        <a href="/orders" style="display:block;text-align:center;color:var(--gray);
+           font-size:.78rem;margin-top:10px;text-decoration:none">
+          View My Orders
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Success state -->
+    <div id="successSection">
+      <div style="font-size:2.5rem;margin-bottom:8px">🎉</div>
+      <h3>Payment Confirmed!</h3>
+      <p>A confirmation email has been sent to your registered email address.</p>
+      <div class="order-summary" id="orderSummary"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <a href="/order/success/{{ order_id }}" class="btn btn-primary"
+           style="justify-content:center">View Order Details</a>
+        <a href="/orders" class="btn btn-outline" style="justify-content:center">My Orders</a>
+        <a href="/shop" class="btn btn-cream" style="justify-content:center">Continue Shopping</a>
+      </div>
+    </div>
+
+    <!-- Failed state -->
+    <div id="failedSection">
+      <h3>❌ Payment Failed</h3>
+      <p>No money was deducted. Please try again.</p>
+      <button onclick="location.reload()" class="btn btn-primary"
+              style="width:100%;justify-content:center">Try Again</button>
+    </div>
+
+    <p style="color:var(--gray);font-size:.72rem;margin-top:20px">
+      🔒 100% Secure · UPI Powered by NPCI
+    </p>
+
+  </div>
+</div>
+
+<script>
+const ORDER_ID =  order_id ;
+const UPI_ID   = 'kirthanaganeshkunder@okhdfcbank';
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.step-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tabQr').style.display   = tab==='qr'   ? 'block' : 'none';
+  document.getElementById('tabApps').style.display = tab==='apps' ? 'block' : 'none';
+  document.getElementById('tabId').style.display   = tab==='id'   ? 'block' : 'none';
+}
+
+// ── App tapped → start countdown ──────────────────────────────────────────
+function appTapped() {
+  document.getElementById('timerEl').style.display = 'block';
+  startCountdown(600);
+}
+
+// ── Copy UPI ID ───────────────────────────────────────────────────────────
+function copyUPI() {
+  navigator.clipboard.writeText(UPI_ID);
+  showToast('UPI ID copied! 📋');
+}
+
+// ── Show / hide confirm section ───────────────────────────────────────────
+function showConfirm() {
+  document.getElementById('confirmSection').style.display = 'block';
+  document.getElementById('showConfirmBtn').style.display = 'none';
+  document.getElementById('utrInput').focus();
+}
+
+function hideConfirm() {
+  document.getElementById('confirmSection').style.display = 'none';
+  document.getElementById('showConfirmBtn').style.display = 'block';
+}
+
+// ── Submit UTR ────────────────────────────────────────────────────────────
+async function submitUTR() {
+  const utr   = document.getElementById('utrInput').value.trim();
+  const errEl = document.getElementById('utrError');
+  const btn   = document.getElementById('confirmBtn');
+
+  if (utr.length < 10) {
+    errEl.style.display = 'block';
+    document.getElementById('utrInput').classList.add('error');
+    return;
+  }
+  errEl.style.display = 'none';
+  document.getElementById('utrInput').classList.remove('error');
+  btn.textContent = 'Verifying…';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch('/order/confirm-payment', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({order_id: ORDER_ID, utr: utr})
+    });
+    const data = await res.json();
+    if (data.success) showSuccess(data);
+    else {
+      btn.textContent = '✅ Confirm Payment';
+      btn.disabled = false;
+      showToast('Could not confirm. Please try again.', true);
+    }
+  } catch(e) {
+    btn.textContent = '✅ Confirm Payment';
+    btn.disabled = false;
+    showToast('Network error. Try again.', true);
+  }
+}
+
+// ── Show success screen ───────────────────────────────────────────────────
+function showSuccess(data) {
+  document.getElementById('paymentArea').style.display = 'none';
+  const badge = document.getElementById('statusBadge');
+  badge.className = 'status-badge badge-paid';
+  badge.textContent = '✅ Payment Confirmed';
+
+  if (data.items) {
+    let html = '';
+    data.items.forEach(i => {
+      html += `<div class="order-row"><span>${i.name} × ${i.qty}</span>
+               <span>₹${(i.price*i.qty).toFixed(0)}</span></div>`;
+    });
+    html += `<div class="order-row total"><span>Total Paid</span>
+             <span>₹${Number(data.total).toFixed(0)}</span></div>`;
+    document.getElementById('orderSummary').innerHTML = html;
+  }
+  document.getElementById('successSection').style.display = 'block';
+}
+
+// ── Countdown timer ───────────────────────────────────────────────────────
+let cdTimer = null;
+function startCountdown(sec) {
+  clearInterval(cdTimer);
+  cdTimer = setInterval(() => {
+    sec--;
+    const m = String(Math.floor(sec/60)).padStart(2,'0');
+    const s = String(sec%60).padStart(2,'0');
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = `${m}:${s}`;
+    if (sec <= 0) clearInterval(cdTimer);
+  }, 1000);
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg, isError=false) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+      padding:12px 24px;border-radius:50px;font-size:.85rem;font-weight:600;
+      z-index:9999;transition:opacity .3s;white-space:nowrap`;
+    document.body.appendChild(t);
+  }
+  t.style.background = isError ? '#e53935' : 'var(--pink)';
+  t.style.color = '#fff';
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 3000);
+}
+</script>
+{% endblock %}

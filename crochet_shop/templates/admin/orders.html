@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Manage Orders – Admin{% endblock %}
+{% block content %}
+<style>
+.adm{padding:100px 3% 60px;max-width:1300px;margin:0 auto}
+.adm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.adm-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--dark)}
+.adm-nav{display:flex;gap:10px;flex-wrap:wrap}
+.adm-nav a{padding:9px 20px;border-radius:50px;font-size:.82rem;font-weight:600;text-decoration:none;transition:.2s;background:var(--cream2);color:var(--dark)}
+.adm-nav a.active,.adm-nav a:hover{background:var(--pink);color:#fff}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filter-btn{padding:7px 18px;border-radius:50px;font-size:.8rem;font-weight:600;text-decoration:none;border:2px solid var(--cream2);color:var(--gray);transition:.2s}
+.filter-btn.active,.filter-btn:hover{border-color:var(--pink);color:var(--pink);background:var(--pink-pale)}
+.adm-section{background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{padding:10px 12px;text-align:left;color:var(--gray);font-weight:600;font-size:.75rem;text-transform:uppercase;border-bottom:2px solid var(--cream2)}
+.tbl td{padding:12px;border-bottom:1px solid var(--cream2);vertical-align:middle}
+.tbl tr:last-child td{border:none}
+.tbl tr:hover td{background:var(--pink-pale)}
+.badge{padding:4px 12px;border-radius:50px;font-size:.72rem;font-weight:600}
+.badge-placed{background:#e3f2fd;color:#1565c0}
+.badge-processing{background:#fff3e0;color:#e65100}
+.badge-shipped{background:#f3e5f5;color:#6a1b9a}
+.badge-delivered{background:#e8f5e9;color:#2e7d32}
+.badge-cancelled{background:#fce4ec;color:#c62828}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-failed{background:#fce4ec;color:#c62828}
+.btn-sm{padding:6px 14px;border-radius:50px;font-size:.75rem;font-weight:600;text-decoration:none;display:inline-block}
+.btn-pink{background:var(--pink);color:#fff}
+.btn-pink:hover{background:#c2185b;color:#fff}
+</style>
+
+<div class="adm">
+  <div class="adm-header">
+    <div class="adm-title">🛒 Orders</div>
+    <nav class="adm-nav">
+      <a href="/admin">Dashboard</a>
+      <a href="/admin/products">Products</a>
+      <a href="/admin/orders" class="active">Orders</a>
+      <a href="/" target="_blank">View Shop ↗</a>
+    </nav>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <a href="/admin/orders" class="filter-btn {{ 'active' if not current_status }}">All</a>
+    {% for s in ['placed','processing','shipped','delivered','cancelled'] %}
+    <a href="/admin/orders?status={{ s }}"
+       class="filter-btn {{ 'active' if current_status == s }}">
+      {{ s.capitalize() }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="adm-section">
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead><tr>
+        <th>Order</th><th>Customer</th><th>Items</th><th>Total</th>
+        <th>Payment</th><th>Status</th><th>Date</th><th>Action</th>
+      </tr></thead>
+      <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>#{{ o.id }}</strong></td>
+        <td>
+          <div style="font-weight:600">{{ o.uname }}</div>
+          <div style="font-size:.72rem;color:var(--gray)">{{ o.uemail }}</div>
+        </td>
+        <td>{{ o.item_count }}</td>
+        <td><strong>₹{{ "%.0f"|format(o.total) }}</strong></td>
+        <td>
+          <span class="badge badge-{{ o.payment_status }}">{{ o.payment_status }}</span>
+          <div style="font-size:.7rem;color:var(--gray);margin-top:2px">{{ o.payment_method }}</div>
+        </td>
+        <td><span class="badge badge-{{ o.order_status }}">{{ o.order_status }}</span></td>
+        <td style="font-size:.75rem;color:var(--gray)">{{ o.created_at[:10] }}</td>
+        <td><a href="/admin/order/{{ o.id }}" class="btn-sm btn-pink">Manage</a></td>
+      </tr>
+      {% endfor %}
+      {% if not orders %}
+      <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray)">No orders found.</td></tr>
+      {% endif %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

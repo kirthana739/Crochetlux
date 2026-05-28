@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}My Stamp Card – CrochetLux{% endblock %}
+{% block content %}
+<style>
+.stamp-wrapper{padding:100px 5% 60px;max-width:700px;margin:0 auto}
+.stamp-hero{background:linear-gradient(135deg,var(--pink),var(--pink-deep));border-radius:24px;padding:32px;color:#fff;text-align:center;margin-bottom:28px}
+.stamp-hero h2{font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:6px}
+.stamp-hero p{opacity:.85;font-size:.92rem}
+.stamp-progress{background:rgba(255,255,255,.15);border-radius:50px;height:12px;margin:20px 0 8px;overflow:hidden}
+.stamp-progress-bar{background:#fff;height:100%;border-radius:50px;transition:.6s}
+.stamp-progress-label{font-size:.82rem;opacity:.8}
+.stamp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stamp-slot{background:#fff;border-radius:16px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.06);font-size:1.8rem;transition:.3s}
+.stamp-slot.filled{background:linear-gradient(135deg,#fce4ec,#f8bbd0)}
+.stamp-slot.filled .stamp-num{color:var(--pink)}
+.stamp-slot.empty .stamp-icon{opacity:.2}
+.stamp-num{font-size:.7rem;font-weight:600;color:var(--gray);margin-top:4px}
+.reward-card{background:linear-gradient(135deg,#e91e8c,#f06292);border-radius:20px;padding:28px;color:#fff;text-align:center;margin-bottom:28px}
+.reward-card h3{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:8px}
+.coupon-box{background:rgba(255,255,255,.2);border-radius:12px;padding:12px 20px;display:inline-block;font-size:1.4rem;font-weight:700;letter-spacing:3px;margin:12px 0}
+.reward-expiry{font-size:.78rem;opacity:.8}
+.history-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.history-card h3{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:14px;color:var(--dark)}
+.history-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--cream2);font-size:.85rem}
+.history-item:last-child{border-bottom:none}
+.history-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.dot-stamp{background:#fce4ec}
+.dot-reward{background:#e8f5e9}
+.dot-redeemed{background:#fff3e0}
+.history-desc{flex:1;color:var(--text)}
+.history-date{color:var(--gray);font-size:.75rem}
+</style>
+
+<div class="stamp-wrapper">
+
+  <!-- Hero -->
+  <div class="stamp-hero">
+    <h2>🎀 Your Stamp Card</h2>
+    <p>Earn 1 stamp per order. Collect 8 stamps to unlock ₹500 off!</p>
+    <div class="stamp-progress">
+      <div class="stamp-progress-bar" style="width: stamp_cardpct "></div>
+    </div>
+    <div class="stamp-progress-label">{{ stamp_card.current }} / 8 stamps this round</div>
+  </div>
+
+  <!-- Stamp Grid -->
+  <div class="stamp-grid">
+    {% for i in range(1, 9) %}
+    <div class="stamp-slot {% if i <= stamp_card.current %}filled{% else %}empty{% endif %}">
+      <div class="stamp-icon">🧶</div>
+      <div class="stamp-num">{{ i }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Reward Banner (only if coupon available) -->
+  {% if stamp_card.has_reward %}
+  <div class="reward-card">
+    <h3>🎉 You've earned a reward!</h3>
+    <p style="opacity:.85;font-size:.88rem">Use this coupon at checkout to get ₹500 off</p>
+    <div class="coupon-box">{{ stamp_card.coupon_code }}</div>
+    <div class="reward-expiry">Valid until {{ stamp_card.coupon_expiry }}</div>
+    <a href="/shop" class="btn" style="background:#fff;color:var(--pink);margin-top:16px;display:inline-block">
+      Shop Now & Redeem →
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- History -->
+  <div class="history-card">
+    <h3>Stamp History</h3>
+    {% if history %}
+      {% for h in history %}
+      <div class="history-item">
+        <div class="history-dot
+          {% if h['type'] == 'stamp' %}dot-stamp
+          {% elif h['type'] == 'redeemed' %}dot-redeemed
+          {% else %}dot-reward{% endif %}">
+          {% if h['type'] == 'stamp' %}🧶
+          {% elif h['type'] == 'redeemed' %}🎟️
+          {% else %}🎁{% endif %}
+        </div>
+        <div class="history-desc">{{ h['description'] }}</div>
+        <div class="history-date">{{ h['created_at'][:10] }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--gray);font-size:.85rem">No history yet. Place your first order to earn a stamp! 🧶</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

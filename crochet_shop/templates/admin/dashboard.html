@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard – CrochetLux{% endblock %}
+{% block content %}
+<style>
+.adm{padding:100px 3% 60px;max-width:1300px;margin:0 auto}
+.adm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+.adm-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--dark)}
+.adm-nav{display:flex;gap:10px;flex-wrap:wrap}
+.adm-nav a{padding:9px 20px;border-radius:50px;font-size:.82rem;font-weight:600;text-decoration:none;transition:.2s}
+.adm-nav a.active,.adm-nav a:hover{background:var(--pink);color:#fff}
+.adm-nav a{background:var(--cream2);color:var(--dark)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:36px}
+.stat-card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.06);text-align:center}
+.stat-icon{font-size:2rem;margin-bottom:8px}
+.stat-val{font-size:1.9rem;font-weight:700;color:var(--pink)}
+.stat-label{font-size:.78rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+.adm-section{background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:24px}
+.adm-section h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--dark);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{padding:10px 12px;text-align:left;color:var(--gray);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--cream2)}
+.tbl td{padding:12px;border-bottom:1px solid var(--cream2);vertical-align:middle}
+.tbl tr:last-child td{border:none}
+.tbl tr:hover td{background:var(--pink-pale)}
+
+.badge{padding:4px 12px;border-radius:50px;font-size:.72rem;font-weight:600}
+.badge-placed{background:#e3f2fd;color:#1565c0}
+.badge-processing{background:#fff3e0;color:#e65100}
+.badge-shipped{background:#f3e5f5;color:#6a1b9a}
+.badge-delivered{background:#e8f5e9;color:#2e7d32}
+.badge-cancelled{background:#fce4ec;color:#c62828}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-failed{background:#fce4ec;color:#c62828}
+
+.btn-sm{padding:6px 14px;border-radius:50px;font-size:.75rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:.2s}
+.btn-pink{background:var(--pink);color:#fff}
+.btn-pink:hover{background:#c2185b}
+.btn-outline-sm{background:none;border:2px solid var(--pink);color:var(--pink)}
+.btn-outline-sm:hover{background:var(--pink);color:#fff}
+</style>
+
+<div class="adm">
+  <div class="adm-header">
+    <div>
+      <div class="adm-title">🛠 Admin Panel</div>
+      <div style="font-size:.8rem;color:var(--gray)">Welcome back, {{ session.user_name }}</div>
+    </div>
+    <nav class="adm-nav">
+      <a href="/admin" class="active">Dashboard</a>
+      <a href="/admin/products">Products</a>
+      <a href="/admin/orders">Orders</a>
+      <a href="/" target="_blank">View Shop ↗</a>
+    </nav>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-val">{{ stats.products }}</div>
+      <div class="stat-label">Products</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🛒</div>
+      <div class="stat-val">{{ stats.orders }}</div>
+      <div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-val" style="color:#e65100">{{ stats.pending }}</div>
+      <div class="stat-label">Pending Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-val">{{ stats.users }}</div>
+      <div class="stat-label">Customers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-val">₹{{ "%.0f"|format(stats.revenue) }}</div>
+      <div class="stat-label">Revenue</div>
+    </div>
+  </div>
+
+  <!-- Recent orders -->
+  <div class="adm-section">
+    <h2>🛒 Recent Orders <a href="/admin/orders" class="btn-sm btn-outline-sm" style="margin-left:auto;font-size:.72rem">View All</a></h2>
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead><tr>
+        <th>Order</th><th>Customer</th><th>Items</th><th>Total</th>
+        <th>Payment</th><th>Status</th><th>Date</th><th>Action</th>
+      </tr></thead>
+      <tbody>
+      {% for o in recent_orders %}
+      <tr>
+        <td><strong>#{{ o.id }}</strong></td>
+        <td>
+          <div style="font-weight:600;font-size:.85rem">{{ o.uname }}</div>
+          <div style="font-size:.72rem;color:var(--gray)">{{ o.uemail }}</div>
+        </td>
+        <td>{{ o.item_count }} item{{ 's' if o.item_count != 1 }}</td>
+        <td><strong>₹{{ "%.0f"|format(o.total) }}</strong></td>
+        <td><span class="badge badge-{{ o.payment_status }}">{{ o.payment_status }}</span></td>
+        <td><span class="badge badge-{{ o.order_status }}">{{ o.order_status }}</span></td>
+        <td style="font-size:.75rem;color:var(--gray)">{{ o.created_at[:10] }}</td>
+        <td><a href="/admin/order/{{ o.id }}" class="btn-sm btn-pink">Manage</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

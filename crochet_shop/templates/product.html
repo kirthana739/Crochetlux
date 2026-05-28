@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block title %}{{ product['name'] }} – CrochetLux{% endblock %}
+{% block content %}
+<style>
+.pd-section{padding:100px 5% 60px;display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1200px;margin:0 auto}
+.pd-img-box{position:sticky;top:90px;align-self:start}
+.pd-main-img{
+  width:100%;aspect-ratio:1;border-radius:24px;overflow:hidden;
+  background:var(--pink-pale);box-shadow:var(--shadow2);
+  display:flex;align-items:center;justify-content:center;font-size:8rem;
+  position:relative
+}
+.pd-main-img img{width:100%;height:100%;object-fit:cover}
+.pd-badge{position:absolute;top:16px;left:16px;background:var(--pink);color:#fff;padding:6px 14px;border-radius:50px;font-size:.75rem;font-weight:600}
+.pd-info{display:block}
+.pd-cat{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--pink);font-weight:600;margin-bottom:8px}
+.pd-name{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--dark);line-height:1.2;margin-bottom:12px}
+.pd-rating{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.pd-price-row{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.pd-price{font-size:2rem;font-weight:700;color:var(--pink)}
+.pd-old{font-size:1.1rem;color:var(--gray);text-decoration:line-through}
+.pd-off{background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:50px;font-size:.8rem;font-weight:600}
+.pd-desc{color:var(--gray);line-height:1.8;font-size:.95rem;margin-bottom:24px}
+.pd-stock-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:50px;font-size:.82rem;font-weight:500;margin-bottom:24px
+}
+.in-stock{background:#e8f5e9;color:#2e7d32}
+.low-stock{background:#fff3e0;color:#e65100}
+.out-stock{background:#fce4ec;color:#c62828}
+.qty-row{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.qty-label{font-weight:500;font-size:.9rem}
+.qty-ctrl{display:flex;align-items:center;gap:0;border:2px solid var(--cream2);border-radius:50px;overflow:hidden}
+.qty-btn{width:40px;height:40px;border:none;background:none;cursor:pointer;font-size:1.1rem;transition:.2s;font-weight:700;color:var(--pink)}
+.qty-btn:hover{background:var(--pink-pale)}
+.qty-val{width:50px;text-align:center;font-weight:600;font-size:1rem;border:none;outline:none;background:none}
+.pd-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:30px}
+.pd-actions .btn{flex:1;min-width:140px;justify-content:center;padding:14px}
+.pd-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+.pd-feature{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--gray)}
+.pd-feature i{color:var(--pink)}
+
+/* Reviews */
+.reviews-section{padding:0 5% 60px;max-width:1200px;margin:0 auto}
+.review-card{background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.review-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.reviewer{font-weight:600;font-size:.9rem}
+.review-date{font-size:.75rem;color:var(--gray)}
+.review-text{color:var(--gray);font-size:.88rem;line-height:1.6;margin-top:8px}
+.review-form{background:var(--pink-pale);border-radius:20px;padding:28px;margin-top:20px}
+.review-form h4{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:16px;color:var(--dark)}
+.star-select{display:flex;gap:6px;margin-bottom:14px}
+.star-select i{font-size:1.5rem;cursor:pointer;color:#ddd;transition:.2s}
+.star-select i:hover,.star-select i.selected{color:var(--gold)}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.85rem;font-weight:500;margin-bottom:6px}
+.form-input{width:100%;padding:12px 16px;border:2px solid rgba(233,30,140,.15);border-radius:12px;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;background:#fff;transition:.3s}
+.form-input:focus{border-color:var(--pink)}
+
+/* Related */
+.related-section{padding:0 5% 60px;max-width:1200px;margin:0 auto}
+@media(max-width:768px){.pd-section{grid-template-columns:1fr;gap:30px}.pd-img-box{position:static}}
+</style>
+
+<div class="pd-section">
+  <!-- Image -->
+  <div class="pd-img-box">
+    <div class="pd-main-img">
+      {% if product['image'] %}
+      <img src="/static/images/{{ product['image'] }}" alt="{{ product['name'] }}" onerror="this.src='/static/images/placeholder.svg'">
+      {% else %}
+      🧶
+      {% endif %}
+      {% if product['original_price'] and product['original_price'] > product['price'] %}
+      <div class="pd-badge">{{ "%.0f"|format((product['original_price']-product['price'])/product['original_price']*100) }}% OFF</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="pd-info">
+    <div class="pd-cat">{{ product['category'] }}</div>
+    <div class="pd-name">{{ product['name'] }}</div>
+    <div class="pd-rating">
+      <div class="stars">
+        {% for i in range(1,6) %}
+        <i class="fa-{% if avg_rating and i <= avg_rating|int %}solid{% else %}regular{% endif %} fa-star"></i>
+        {% endfor %}
+      </div>
+      <span class="rating-count">({{ reviews|length }} reviews)</span>
+    </div>
+    <div class="pd-price-row">
+      <span class="pd-price">₹{{ "%.0f"|format(product['price']) }}</span>
+      {% if product['original_price'] and product['original_price'] > product['price'] %}
+      <span class="pd-old">₹{{ "%.0f"|format(product['original_price']) }}</span>
+      <span class="pd-off">Save ₹{{ "%.0f"|format(product['original_price']-product['price']) }}</span>
+      {% endif %}
+    </div>
+    <p class="pd-desc">{{ product['description'] }}</p>
+
+    {% if product['stock'] > 5 %}
+    <div class="pd-stock-badge in-stock"><i class="fa-solid fa-circle-check"></i> In Stock ({{ product['stock'] }} available)</div>
+    {% elif product['stock'] > 0 %}
+    <div class="pd-stock-badge low-stock"><i class="fa-solid fa-triangle-exclamation"></i> Only {{ product['stock'] }} left!</div>
+    {% else %}
+    <div class="pd-stock-badge out-stock"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</div>
+    {% endif %}
+
+    {% if product['stock'] > 0 %}
+    <div class="qty-row">
+      <span class="qty-label">Quantity:</span>
+      <div class="qty-ctrl">
+        <button class="qty-btn" type="button" onclick="changeQty(-1)">−</button>
+        <input class="qty-val" id="qty" type="number" value="1" min="1" max="{{ product['stock'] }}" readonly>
+        <button class="qty-btn" type="button" onclick="changeQty(1)">+</button>
+      </div>
+    </div>
+    <div class="pd-actions">
+      <form action="/cart/add" method="POST" style="flex:1">
+        <input type="hidden" name="product_id" value="{{ product['id'] }}">
+        <input type="hidden" name="quantity" id="formQty" value="1">
+        <button type="submit" class="btn btn-primary" style="width:100%"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+      </form>
+      <button class="btn btn-outline {% if in_wishlist %}active{% endif %}"
+              type="button"
+              id="wishBtn"
+              data-product-id="{{ product['id'] }}"
+              onclick="toggleWishlist(this, this.dataset.productId)">
+        <i class="fa-{% if in_wishlist %}solid{% else %}regular{% endif %} fa-heart"></i>
+        {% if in_wishlist %}Wishlisted{% else %}Wishlist{% endif %}
+      </button>
+    </div>
+    {% endif %}
+
+    <div class="pd-features">
+      <div class="pd-feature"><i class="fa-solid fa-truck"></i> Free shipping ₹999+</div>
+      <div class="pd-feature"><i class="fa-solid fa-rotate-left"></i> 30-day returns</div>
+      <div class="pd-feature"><i class="fa-solid fa-shield-halved"></i> 100% authentic</div>
+      <div class="pd-feature"><i class="fa-solid fa-gift"></i> Gift wrap available</div>
+    </div>
+  </div>
+</div>
+
+<!-- Reviews -->
+<div class="reviews-section">
+  <div class="section-header" style="text-align:left">
+    <p class="section-eyebrow">Customer Reviews</p>
+    <h2 class="section-title" style="font-size:1.8rem">What People <span>Say</span></h2>
+  </div>
+  {% for r in reviews %}
+  <div class="review-card">
+    <div class="review-header">
+      <div>
+        <div class="reviewer">{{ r['uname'] }}</div>
+        <div class="stars">
+          {% for i in range(1,6) %}
+          <i class="fa-{% if i <= r['rating'] %}solid{% else %}regular{% endif %} fa-star"></i>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="review-date">{{ r['created_at'][:10] }}</div>
+    </div>
+    <div class="review-text">{{ r['comment'] }}</div>
+  </div>
+  {% else %}
+  <p style="color:var(--gray);font-style:italic">No reviews yet. Be the first!</p>
+  {% endfor %}
+
+  {% if session.user_id %}
+  <div class="review-form">
+    <h4>Write a Review</h4>
+    <form action="/review/add" method="POST">
+      <input type="hidden" name="product_id" value="{{ product['id'] }}">
+      <div class="star-select" id="starSelect">
+        {% for i in range(1,6) %}
+        <i class="fa-regular fa-star" data-val="{{ i }}" onclick="setRating( i )"></i>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="rating" id="ratingInput" value="5">
+      <div class="form-group">
+        <label>Your Review</label>
+        <textarea name="comment" class="form-input" rows="4" placeholder="Share your experience with this product..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+  </div>
+  {% else %}
+  <div style="background:var(--pink-pale);border-radius:16px;padding:20px;text-align:center;margin-top:20px">
+    <p>Please <a href="/login" style="color:var(--pink);font-weight:600">login</a> to write a review</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Related Products -->
+{% if related %}
+<div class="related-section">
+  <div class="section-header" style="text-align:left">
+    <p class="section-eyebrow">You May Also Like</p>
+    <h2 class="section-title" style="font-size:1.8rem">Related <span>Products</span></h2>
+  </div>
+  <div class="product-grid">
+    {% for p in related %}
+    <div class="product-card">
+      <div class="card-img">
+        {% if p['image'] %}
+        <img src="/static/images/{{ p['image'] }}" alt="{{ p['name'] }}" onerror="this.src='/static/images/placeholder.svg'">
+        {% else %}
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem">🧶</div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="card-title">{{ p['name'] }}</div>
+        <div class="card-price"><span class="price-current">₹{{ "%.0f"|format(p['price']) }}</span></div>
+        <div class="card-actions">
+          <button class="btn btn-outline"
+                  type="button"
+                  data-product-id="{{ p['id'] }}"
+                  onclick="addToCart(this.dataset.productId)">Add to Cart</button>
+          <a href="/product/{{ p['id'] }}" class="btn btn-primary">View</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<script>
+function changeQty(d) {
+  var el = document.getElementById('qty');
+  var max = parseInt(el.max);
+  var v = parseInt(el.value) + d;
+  if (v < 1) v = 1;
+  if (v > max) v = max;
+  el.value = v;
+  document.getElementById('formQty').value = v;
+}
+
+function setRating(n) {
+  document.getElementById('ratingInput').value = n;
+  document.querySelectorAll('#starSelect i').forEach(function(star, i) {
+    star.className = i < n ? 'fa-solid fa-star' : 'fa-regular fa-star';
+    star.classList.toggle('selected', i < n);
+  });
+}
+
+// Init 5 stars
+setRating(5);
+</script>
+{% endblock %}

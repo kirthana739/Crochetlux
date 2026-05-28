@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% block title %}CrochetLux – Luxury Handcrafted Crochet{% endblock %}
+{% block content %}
+
+<!-- ══════════════════════════════════════════════
+     3D ANIMATED SPLASH SCREEN (5 seconds)
+══════════════════════════════════════════════ -->
+<div id="splash">
+  <div class="splash-bg"></div>
+  <div class="splash-content">
+    <div class="splash-logo">Crochet<span>Lux</span></div>
+    <div class="splash-tagline">Where every stitch is a masterpiece</div>
+    <div class="splash-slider">
+      <div class="splash-slide active">
+        <div class="splash-3d-card">
+          <div class="splash-3d-inner">
+            <div class="splash-emoji">🧶</div>
+            <div class="splash-item-name">Rosette Dream Bag</div>
+            <div class="splash-item-sub">Handcrafted in Hot Pink</div>
+          </div>
+        </div>
+      </div>
+      <div class="splash-slide">
+        <div class="splash-3d-card">
+          <div class="splash-3d-inner">
+            <div class="splash-emoji">🌸</div>
+            <div class="splash-item-name">Boho Cardigan</div>
+            <div class="splash-item-sub">Cream Lace Elegance</div>
+          </div>
+        </div>
+      </div>
+      <div class="splash-slide">
+        <div class="splash-3d-card">
+          <div class="splash-3d-inner">
+            <div class="splash-emoji">🐰</div>
+            <div class="splash-item-name">Amigurumi Bunny</div>
+            <div class="splash-item-sub">Adorable & Handmade</div>
+          </div>
+        </div>
+      </div>
+      <div class="splash-slide">
+        <div class="splash-3d-card">
+          <div class="splash-3d-inner">
+            <div class="splash-emoji">🌺</div>
+            <div class="splash-item-name">Flower Crown</div>
+            <div class="splash-item-sub">Pink Petal Headband</div>
+          </div>
+        </div>
+      </div>
+      <div class="splash-slide">
+        <div class="splash-3d-card">
+          <div class="splash-3d-inner">
+            <div class="splash-emoji">🏠</div>
+            <div class="splash-item-name">Lace Table Runner</div>
+            <div class="splash-item-sub">Delicate Cream Beauty</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="splash-dots">
+      <span class="dot active"></span><span class="dot"></span>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="splash-progress"><div class="splash-bar"></div></div>
+  </div>
+  <!-- Floating yarn balls -->
+  <div class="yarn y1">🧶</div>
+  <div class="yarn y2">✨</div>
+  <div class="yarn y3">🌸</div>
+  <div class="yarn y4">🧶</div>
+  <div class="yarn y5">💝</div>
+</div>
+
+<style>
+/* ── SPLASH ── */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#ff006e 0%,#e91e8c 30%,#c0166e 60%,#1a0a12 100%);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;transition:opacity .8s ease,transform .8s ease
+}
+#splash.hide{opacity:0;transform:scale(1.05);pointer-events:none}
+.splash-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,.08) 0%,transparent 60%),
+             radial-gradient(ellipse at 70% 20%,rgba(212,175,55,.12) 0%,transparent 50%);
+  animation:bgPulse 3s ease infinite alternate
+}
+@keyframes bgPulse{from{opacity:.6}to{opacity:1}}
+.splash-content{position:relative;z-index:2;text-align:center;width:100%;max-width:500px;padding:20px}
+.splash-logo{
+  font-family:'Playfair Display',serif;font-size:3rem;color:#fff;font-weight:700;
+  letter-spacing:2px;margin-bottom:8px;
+  animation:logoIn .8s cubic-bezier(.34,1.56,.64,1)
+}
+.splash-logo span{color:#ffd700}
+@keyframes logoIn{from{opacity:0;transform:translateY(-30px) scale(.8)}to{opacity:1;transform:none}}
+.splash-tagline{
+  color:rgba(255,255,255,.75);font-size:.95rem;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:40px;font-style:italic;
+  animation:fadeIn .8s ease .3s both
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* 3D Card Slider */
+.splash-slider{position:relative;height:200px;perspective:800px}
+.splash-slide{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:rotateY(90deg) scale(.8);transition:.6s cubic-bezier(.34,1.56,.64,1);pointer-events:none
+}
+.splash-slide.active{opacity:1;transform:rotateY(0deg) scale(1);pointer-events:auto}
+.splash-slide.exit{opacity:0;transform:rotateY(-90deg) scale(.8)}
+.splash-3d-card{
+  background:rgba(255,255,255,.12);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.2);border-radius:24px;
+  padding:30px 50px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.2);
+  transform-style:preserve-3d;
+  animation:cardFloat 3s ease-in-out infinite
+}
+@keyframes cardFloat{0%,100%{transform:translateY(0) rotateX(0)}50%{transform:translateY(-10px) rotateX(5deg)}}
+.splash-emoji{font-size:4rem;margin-bottom:10px;display:block;animation:emojiSpin 3s ease-in-out infinite}
+@keyframes emojiSpin{0%,100%{transform:rotateZ(0) scale(1)}50%{transform:rotateZ(10deg) scale(1.1)}}
+.splash-item-name{font-family:'Playfair Display',serif;font-size:1.4rem;color:#fff;font-weight:700;margin-bottom:4px}
+.splash-item-sub{color:rgba(255,255,255,.7);font-size:.85rem;letter-spacing:1px}
+
+.splash-dots{display:flex;gap:8px;justify-content:center;margin-top:20px}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);transition:.3s}
+.dot.active{background:#fff;width:24px;border-radius:4px}
+
+.splash-progress{
+  width:200px;height:3px;background:rgba(255,255,255,.2);
+  border-radius:2px;margin:16px auto 0;overflow:hidden
+}
+.splash-bar{
+  height:100%;background:linear-gradient(90deg,#fff,#ffd700);
+  border-radius:2px;animation:progressFill 5s linear forwards
+}
+@keyframes progressFill{from{width:0}to{width:100%}}
+
+/* Floating yarns */
+.yarn{position:absolute;font-size:2rem;animation:floatYarn linear infinite;opacity:.4;pointer-events:none}
+.y1{left:5%;top:20%;animation-duration:6s;animation-delay:0s}
+.y2{left:85%;top:15%;animation-duration:7s;animation-delay:1s}
+.y3{left:10%;top:70%;animation-duration:8s;animation-delay:.5s}
+.y4{left:90%;top:65%;animation-duration:5s;animation-delay:2s}
+.y5{left:50%;top:5%;animation-duration:9s;animation-delay:1.5s}
+@keyframes floatYarn{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-20px) rotate(180deg)}100%{transform:translateY(0) rotate(360deg)}}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--pink-pale) 0%,var(--cream) 50%,#ffe4f3 100%);
+  padding:100px 5% 60px;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 70% 50%,rgba(233,30,140,.08) 0%,transparent 60%);
+  pointer-events:none
+}
+.hero-shapes div{
+  position:absolute;border-radius:50%;
+  background:linear-gradient(135deg,rgba(233,30,140,.06),rgba(233,30,140,.12));
+  animation:shapeFloat ease-in-out infinite
+}
+.hero-shapes .s1{width:400px;height:400px;right:-100px;top:-100px;animation-duration:8s}
+.hero-shapes .s2{width:200px;height:200px;left:10%;bottom:20%;animation-duration:6s;animation-delay:2s}
+.hero-shapes .s3{width:100px;height:100px;right:20%;bottom:30%;animation-duration:5s;animation-delay:1s}
+@keyframes shapeFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
+.hero-content{max-width:580px;position:relative;z-index:2}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(233,30,140,.08);border:1px solid rgba(233,30,140,.2);
+  color:var(--pink);padding:6px 16px;border-radius:50px;
+  font-size:.78rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;
+  margin-bottom:20px;animation:fadeIn .6s ease .2s both
+}
+.hero h1{
+  font-family:'Playfair Display',serif;font-size:3.8rem;line-height:1.1;
+  color:var(--dark);margin-bottom:20px;animation:fadeIn .6s ease .4s both
+}
+.hero h1 em{color:var(--pink);font-style:italic}
+.hero-sub{
+  color:var(--gray);font-size:1.05rem;line-height:1.8;
+  margin-bottom:36px;animation:fadeIn .6s ease .6s both
+}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;animation:fadeIn .6s ease .8s both}
+.hero-stats{
+  display:flex;gap:30px;margin-top:50px;
+  animation:fadeIn .6s ease 1s both
+}
+.hero-stat{text-align:center}
+.hero-stat strong{display:block;font-size:1.6rem;font-weight:700;color:var(--pink);font-family:'Playfair Display',serif}
+.hero-stat span{font-size:.8rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px}
+.hero-visual{
+  position:absolute;right:5%;top:50%;transform:translateY(-50%);
+  width:420px;height:420px;
+  perspective:600px;display:flex;align-items:center;justify-content:center
+}
+.hero-3d{
+  width:300px;height:300px;position:relative;
+  transform-style:preserve-3d;
+  animation:heroSpin 20s linear infinite
+}
+@keyframes heroSpin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+.hero-cube-face{
+  position:absolute;width:200px;height:200px;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:5rem;border:2px solid rgba(233,30,140,.2);
+  backdrop-filter:blur(10px);
+}
+.face-front{background:rgba(255,255,255,.8);transform:translateZ(100px)}
+.face-back{background:rgba(255,240,248,.8);transform:rotateY(180deg) translateZ(100px)}
+.face-right{background:rgba(252,228,236,.8);transform:rotateY(90deg) translateZ(100px)}
+.face-left{background:rgba(255,248,240,.8);transform:rotateY(-90deg) translateZ(100px)}
+
+/* ── Marquee ── */
+.marquee-section{padding:20px 0;background:var(--pink);overflow:hidden}
+.marquee-track{display:flex;gap:0;animation:marquee 25s linear infinite;width:max-content}
+.marquee-item{display:flex;align-items:center;gap:12px;padding:0 30px;white-space:nowrap;color:#fff;font-size:.85rem;font-weight:500;letter-spacing:.5px}
+.marquee-item span{color:rgba(255,255,255,.6)}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── Categories ── */
+.categories-section{padding:70px 5%;background:var(--cream)}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.cat-card{
+  background:#fff;border-radius:20px;padding:28px 16px;text-align:center;
+  cursor:pointer;transition:.3s;box-shadow:0 2px 12px rgba(0,0,0,.04);
+  border:2px solid transparent
+}
+.cat-card:hover{border-color:var(--pink);transform:translateY(-4px);box-shadow:0 8px 30px rgba(233,30,140,.15)}
+.cat-icon{font-size:2.5rem;display:block;margin-bottom:10px;transition:.3s}
+.cat-card:hover .cat-icon{transform:scale(1.2) rotate(10deg)}
+.cat-name{font-size:.85rem;font-weight:600;color:var(--text)}
+.cat-count{font-size:.72rem;color:var(--gray);margin-top:2px}
+
+/* ── Featured ── */
+.featured-section{padding:70px 5%;background:linear-gradient(180deg,var(--cream) 0%,var(--pink-pale) 100%)}
+
+/* ── Why Us ── */
+.why-section{
+  padding:70px 5%;
+  background:linear-gradient(135deg,var(--dark) 0%,#2d0a20 100%);
+  position:relative;overflow:hidden
+}
+.why-section::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 50%,rgba(233,30,140,.15) 0%,transparent 60%)
+}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px;position:relative}
+.why-card{
+  background:rgba(255,255,255,.05);border:1px solid rgba(233,30,140,.2);
+  border-radius:20px;padding:30px;text-align:center;transition:.3s;
+  backdrop-filter:blur(10px)
+}
+.why-card:hover{background:rgba(233,30,140,.1);border-color:var(--pink);transform:translateY(-4px)}
+.why-icon{font-size:2.5rem;margin-bottom:14px;display:block}
+.why-title{font-family:'Playfair Display',serif;font-size:1rem;color:#fff;margin-bottom:8px}
+.why-text{font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.6}
+.why-section .section-title{color:#fff}
+
+/* ── Newsletter ── */
+.newsletter-section{
+  padding:70px 5%;background:var(--pink-pale);text-align:center
+}
+.newsletter-box{max-width:500px;margin:0 auto}
+.newsletter-form{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+.newsletter-form input{
+  flex:1;min-width:200px;padding:14px 20px;border:2px solid rgba(233,30,140,.2);
+  border-radius:50px;font-family:'DM Sans',sans-serif;font-size:.9rem;
+  background:#fff;outline:none;transition:.3s
+}
+.newsletter-form input:focus{border-color:var(--pink)}
+
+/* ── HOME REELS SECTION ── */
+.home-reels-section{
+  padding:70px 5%;
+  background:#0d0d0d;
+}
+.home-reels-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:28px;
+}
+.home-reels-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.6rem;font-weight:700;color:#fff;margin:0 0 6px;
+}
+.home-reels-sub{
+  font-size:.85rem;color:rgba(255,255,255,.45);margin:0;
+}
+.home-reels-viewall{
+  background:linear-gradient(135deg,#e91e8c,#f06292);
+  color:#fff;text-decoration:none;
+  padding:10px 22px;border-radius:50px;
+  font-size:.82rem;font-weight:600;white-space:nowrap;
+  transition:opacity .2s;
+  box-shadow:0 4px 16px rgba(233,30,140,.35);
+}
+.home-reels-viewall:hover{opacity:.85;}
+
+.home-reels-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:12px;
+}
+@media(min-width:600px){
+  .home-reels-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+}
+@media(min-width:900px){
+  .home-reels-grid{grid-template-columns:repeat(6,1fr);}
+}
+
+.home-reel-card{
+  text-decoration:none;display:block;
+  border-radius:16px;overflow:hidden;
+  position:relative;aspect-ratio:9/16;
+  background:#1a1a1a;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  transition:transform .25s,box-shadow .25s;
+}
+.home-reel-card:hover{
+  transform:translateY(-6px) scale(1.02);
+  box-shadow:0 12px 36px rgba(233,30,140,.3);
+}
+.home-reel-video{
+  width:100%;height:100%;
+  object-fit:cover;display:block;
+  pointer-events:none;
+}
+.home-reel-play{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:42px;height:42px;
+  background:rgba(233,30,140,.9);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:.95rem;
+  pointer-events:none;
+  transition:opacity .2s, transform .2s;
+}
+.home-reel-card:hover .home-reel-play{
+  opacity:0;transform:translate(-50%,-50%) scale(1.3);
+}
+.home-reel-overlay{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:28px 8px 10px;
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
+  pointer-events:none;
+}
+.home-reel-label{
+  color:#fff;font-size:.7rem;font-weight:600;
+  display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;line-clamp:2;overflow:hidden;
+  line-height:1.4;
+}
+</style>
+
+<!-- MAIN CONTENT (hidden initially) -->
+<div id="mainContent" style="opacity:0;transition:opacity .8s ease">
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-shapes"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">✨ Luxury Handcrafted Crochet</div>
+    <h1>Every Stitch,<br><em>A Story</em> of<br>Artistry</h1>
+    <p class="hero-sub">Discover our exquisite collection of handcrafted crochet pieces — bags, clothing, home décor & more. Made with love, designed for luxury.</p>
+    <div class="hero-actions">
+      <a href="/shop" class="btn btn-primary"><i class="fa-solid fa-bag-shopping"></i> Shop Now</a>
+      <a href="/shop?cat=Bags" class="btn btn-outline">Explore Collections</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong>500+</strong><span>Products</span></div>
+      <div class="hero-stat"><strong>2.4k+</strong><span>Happy Buyers</span></div>
+      <div class="hero-stat"><strong>100%</strong><span>Handmade</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-3d">
+      <div class="hero-cube-face face-front" style="left:50px;top:50px">🧶</div>
+      <div class="hero-cube-face face-back" style="left:50px;top:50px">🌸</div>
+      <div class="hero-cube-face face-right" style="left:50px;top:50px">🐰</div>
+      <div class="hero-cube-face face-left" style="left:50px;top:50px">💝</div>
+    </div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    {% for item in ['Free Shipping Over ₹999','Handmade With Love','100% Authentic Crochet','New Arrivals Weekly','Custom Orders Welcome','Eco-Friendly Yarn','Gift Packaging Available','Free Shipping Over ₹999','Handmade With Love','100% Authentic Crochet','New Arrivals Weekly','Custom Orders Welcome','Eco-Friendly Yarn','Gift Packaging Available'] %}
+    <div class="marquee-item">{{ item }} <span>✦</span></div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Categories -->
+<section class="categories-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Browse By Category</p>
+    <h2 class="section-title">Our <span>Collections</span></h2>
+  </div>
+  <div class="cat-grid">
+    {% for cat in [('Bags','👜','Totes & Clutches'),('Clothing','👗','Cardigans & More'),('Toys','🐰','Amigurumi'),('Home','🏠','Décor & Runners'),('Accessories','💍','Headbands & More')] %}
+    <a href="/shop?cat={{ cat[0] }}" class="cat-card" style="text-decoration:none">
+      <span class="cat-icon">{{ cat[1] }}</span>
+      <div class="cat-name">{{ cat[0] }}</div>
+      <div class="cat-count">{{ cat[2] }}</div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section class="featured-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Handpicked For You</p>
+    <h2 class="section-title">Featured <span>Pieces</span></h2>
+    <p class="section-sub">Exquisite handcrafted crochet items, made with premium yarn and lots of love</p>
+  </div>
+  <div class="product-grid">
+    {% for p in featured %}
+    <div class="product-card" style="animation:fadeIn .5s ease  loop index0 * 0.08 s both">
+      <div class="card-img">
+        {% if p['image'] %}
+        <img src="/static/images/{{ p['image'] }}" alt="{{ p['name'] }}" onerror="this.src='/static/images/placeholder.svg'">
+        {% else %}
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem">🧶</div>
+        {% endif %}
+        {% if p['original_price'] and p['original_price'] > p['price'] %}
+        <div class="card-badges"><span class="badge-tag badge-sale">SALE</span></div>
+        {% endif %}
+        <button class="card-wish" onclick="toggleWishlist(this,  p['id'] );event.preventDefault()">
+          <i class="fa-regular fa-heart"></i>
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="card-category">{{ p['category'] }}</div>
+        <a href="/product/{{ p['id'] }}">
+          <div class="card-title">{{ p['name'] }}</div>
+        </a>
+        <div class="card-price">
+          <span class="price-current">₹{{ "%.0f"|format(p['price']) }}</span>
+          {% if p['original_price'] and p['original_price'] > p['price'] %}
+          <span class="price-old">₹{{ "%.0f"|format(p['original_price']) }}</span>
+          <span class="price-off">{{ "%.0f"|format((p['original_price']-p['price'])/p['original_price']*100) }}% off</span>
+          {% endif %}
+        </div>
+        <div class="card-stock">{{ p['stock'] }} in stock</div>
+        <div class="card-actions">
+          <button class="btn btn-outline" onclick="addToCart( p['id'] )"><i class="fa-solid fa-cart-plus"></i> Cart</button>
+          <a href="/product/{{ p['id'] }}" class="btn btn-primary">View</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <a href="/shop" class="btn btn-primary" style="padding:14px 40px">View All Products <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     REELS SECTION
+══════════════════════════════════════════════ -->
+{% if reels %}
+<section class="home-reels-section">
+  <div class="home-reels-header">
+    <div>
+      <h2 class="home-reels-title">🎬 Latest Reels</h2>
+      <p class="home-reels-sub">Watch our handcrafted crochet in action</p>
+    </div>
+    <a href="/reels" class="home-reels-viewall">View All →</a>
+  </div>
+  <div class="home-reels-grid">
+    {% for reel in reels %}
+    <a href="/reels" class="home-reel-card">
+      <video class="home-reel-video"
+             src="/static/reels/{{ reel.filename }}"
+             muted playsinline preload="metadata"></video>
+      <div class="home-reel-play">▶</div>
+      <div class="home-reel-overlay">
+        {% if reel.title %}
+        <span class="home-reel-label">{{ reel.title }}</span>
+        {% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Why Us -->
+<section class="why-section">
+  <div class="section-header">
+    <p class="section-eyebrow" style="color:var(--pink-light)">Why Choose Us</p>
+    <h2 class="section-title">The CrochetLux <span>Promise</span></h2>
+  </div>
+  <div class="why-grid">
+    {% for icon,title,text in [
+      ('🧶','100% Handmade','Every piece crafted by skilled artisans with premium yarn'),
+      ('🚚','Fast Delivery','Pan-India delivery within 3-7 business days'),
+      ('💝','Gift Packaging','Beautiful gift wrapping available for all orders'),
+      ('🔄','Easy Returns','30-day hassle-free return policy'),
+      ('⭐','Premium Quality','Only the finest materials used in every creation'),
+      ('📞','24/7 Support','Dedicated customer care for all your needs')
+    ] %}
+    <div class="why-card">
+      <span class="why-icon">{{ icon }}</span>
+      <div class="why-title">{{ title }}</div>
+      <div class="why-text">{{ text }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter-section">
+  <div class="newsletter-box">
+    <p class="section-eyebrow">Stay Updated</p>
+    <h2 class="section-title">Get <span>Exclusive</span> Offers</h2>
+    <p class="section-sub">Subscribe to our newsletter for new arrivals, special discounts, and crochet inspiration!</p>
+    <form class="newsletter-form" onsubmit="event.preventDefault();showToast('Thank you for subscribing! 💖')">
+      <input type="email" placeholder="Enter your email address" required>
+      <button type="submit" class="btn btn-primary">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+</div><!-- end mainContent -->
+
+<script>
+// ── Splash Screen Logic ──
+var slides   = document.querySelectorAll('.splash-slide');
+var dots     = document.querySelectorAll('.dot');
+var current  = 0;
+var interval = 1000; // 1s per slide = 5 slides in 5s
+
+function nextSlide() {
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit');
+  dots[current].classList.remove('active');
+  setTimeout(function() { slides[current].classList.remove('exit'); }, 600);
+  current = (current + 1) % slides.length;
+  slides[current].classList.add('active');
+  dots[current].classList.add('active');
+}
+
+var slideTimer = setInterval(nextSlide, interval);
+
+setTimeout(function() {
+  clearInterval(slideTimer);
+  var splash = document.getElementById('splash');
+  splash.classList.add('hide');
+  setTimeout(function() {
+    splash.style.display = 'none';
+    document.getElementById('mainContent').style.opacity = '1';
+  }, 800);
+}, 5000);
+
+// 3D hero mouse parallax
+var heroEl = document.querySelector('.hero');
+if (heroEl) {
+  heroEl.addEventListener('mousemove', function(e) {
+    var rect = heroEl.getBoundingClientRect();
+    var x = (e.clientX - rect.left) / rect.width - 0.5;
+    var y = (e.clientY - rect.top) / rect.height - 0.5;
+    var cube = document.querySelector('.hero-3d');
+    if (cube) { cube.style.transform = 'rotateY(' + (x * 20) + 'deg) rotateX(' + (-y * 15) + 'deg)'; }
+  });
+}
+
+// Animate on scroll
+var scrollObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.why-card,.cat-card').forEach(function(el) {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  scrollObserver.observe(el);
+});
+
+// ── Reel cards: hover to preview ──
+document.querySelectorAll('.home-reel-card').forEach(function(card) {
+  var video = card.querySelector('.home-reel-video');
+  if (!video) { return; }
+  card.addEventListener('mouseenter', function() {
+    video.play().catch(function() {});
+  });
+  card.addEventListener('mouseleave', function() {
+    video.pause();
+    video.currentTime = 0;
+  });
+});
+</script>
+{% endblock %}

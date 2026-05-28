@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}CrochetLux – Luxury Handcrafted Crochet{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --pink:#E91E8C;
+  --pink-light:#f472b6;
+  --pink-pale:#fff0f7;
+  --pink-deep:#c0166e;
+  --cream:#FFF8F0;
+  --cream2:#fce4ec;
+  --gold:#d4af37;
+  --dark:#1a0a12;
+  --text:#3d1a28;
+  --gray:#8a7a82;
+  --white:#ffffff;
+  --radius:16px;
+  --shadow:0 8px 40px rgba(233,30,140,0.15);
+  --shadow2:0 20px 60px rgba(233,30,140,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--cream2)}
+::-webkit-scrollbar-thumb{background:var(--pink);border-radius:3px}
+
+/* ── Flash messages ── */
+.flash-container{position:fixed;top:80px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.flash{padding:14px 20px;border-radius:12px;font-size:14px;font-weight:500;animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.flash.success{background:#e8f5e9;color:#2e7d32;border-left:4px solid #4caf50}
+.flash.error{background:#fce4ec;color:#c62828;border-left:4px solid var(--pink)}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── Navbar ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(233,30,140,.1);padding:0 5%;height:70px;display:flex;align-items:center;justify-content:space-between;transition:.3s}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--pink);font-weight:700;letter-spacing:1px}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:.9rem;font-weight:500;color:var(--text);position:relative;transition:.3s}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--pink);transition:.3s}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-links a:hover{color:var(--pink)}
+.nav-actions{display:flex;align-items:center;gap:16px}
+.nav-icon{position:relative;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.3s;color:var(--text)}
+.nav-icon:hover{background:var(--pink-pale);color:var(--pink)}
+.badge{position:absolute;top:-4px;right:-4px;background:var(--pink);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.btn-nav{background:var(--pink);color:#fff;padding:10px 22px;border-radius:50px;font-size:.85rem;font-weight:500;transition:.3s;border:none;cursor:pointer}
+.btn-nav:hover{background:var(--pink-deep);transform:translateY(-1px);box-shadow:0 4px 15px rgba(233,30,140,.4)}
+
+/* Hamburger */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:5px}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text);border-radius:2px;transition:.3s}
+.mobile-menu{display:none;position:fixed;top:70px;left:0;right:0;background:#fff;padding:20px 5%;box-shadow:0 10px 30px rgba(0,0,0,.1);z-index:999;flex-direction:column;gap:16px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:1rem;padding:8px 0;border-bottom:1px solid var(--cream2)}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:50px;font-size:.9rem;font-weight:500;cursor:pointer;transition:.3s;border:none;font-family:'DM Sans',sans-serif}
+.btn-primary{background:linear-gradient(135deg,var(--pink),var(--pink-deep));color:#fff;box-shadow:0 4px 20px rgba(233,30,140,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(233,30,140,.5)}
+.btn-outline{background:transparent;border:2px solid var(--pink);color:var(--pink)}
+.btn-outline:hover{background:var(--pink);color:#fff}
+.btn-cream{background:var(--cream);color:var(--text);border:1px solid rgba(233,30,140,.2)}
+.btn-cream:hover{background:var(--pink-pale)}
+
+/* ── Cards ── */
+.product-card{background:#fff;border-radius:20px;overflow:hidden;transition:.4s;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.product-card:hover{transform:translateY(-8px);box-shadow:var(--shadow2)}
+.product-card .card-img{position:relative;overflow:hidden;height:260px;background:var(--pink-pale)}
+.product-card .card-img img{width:100%;height:100%;object-fit:cover;transition:.5s}
+.product-card:hover .card-img img{transform:scale(1.08)}
+.card-badges{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px}
+.badge-tag{padding:4px 10px;border-radius:50px;font-size:.7rem;font-weight:600;letter-spacing:.5px}
+.badge-sale{background:var(--pink);color:#fff}
+.badge-new{background:var(--gold);color:#fff}
+.card-wish{position:absolute;top:12px;right:12px;width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.1);transition:.3s;border:none}
+.card-wish:hover,.card-wish.active{background:var(--pink-pale);color:var(--pink)}
+.card-wish.active i{color:var(--pink)}
+.card-body{padding:16px}
+.card-category{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:4px}
+.card-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;margin-bottom:8px;line-height:1.3}
+.card-price{display:flex;align-items:center;gap:8px}
+.price-current{font-size:1.1rem;font-weight:700;color:var(--pink)}
+.price-old{font-size:.85rem;color:var(--gray);text-decoration:line-through}
+.price-off{font-size:.75rem;color:#4caf50;font-weight:600}
+.card-stock{font-size:.75rem;color:var(--gray);margin-top:4px}
+.card-actions{display:flex;gap:8px;margin-top:12px}
+.card-actions .btn{flex:1;padding:10px;font-size:.8rem;justify-content:center}
+
+/* ── Stars ── */
+.stars{display:flex;gap:2px;color:var(--gold)}
+.stars i{font-size:.8rem}
+.rating-count{font-size:.75rem;color:var(--gray);margin-left:4px}
+
+/* ── Section ── */
+.section{padding:80px 5%}
+.section-header{text-align:center;margin-bottom:50px}
+.section-eyebrow{font-size:.8rem;text-transform:uppercase;letter-spacing:3px;color:var(--pink);font-weight:600;margin-bottom:8px}
+.section-title{font-family:'Playfair Display',serif;font-size:2.4rem;color:var(--dark);line-height:1.2}
+.section-title span{color:var(--pink);font-style:italic}
+.section-sub{color:var(--gray);margin-top:10px;font-size:.95rem;max-width:500px;margin-left:auto;margin-right:auto}
+
+/* Grid */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px}
+
+/* ── Footer ── */
+footer{background:var(--dark);color:#fff;padding:60px 5% 20px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand .nav-logo{display:block;margin-bottom:12px;font-size:1.8rem}
+.footer-brand p{color:#ccc;font-size:.9rem;line-height:1.7}
+.footer-socials{display:flex;gap:12px;margin-top:16px}
+.footer-social{width:36px;height:36px;border-radius:50%;background:rgba(233,30,140,.2);display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:.3s;color:var(--pink-light)}
+.footer-social:hover{background:var(--pink);color:#fff}
+.footer-col h4{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:16px;color:var(--pink-light)}
+.footer-col a{display:block;color:#aaa;font-size:.85rem;margin-bottom:8px;transition:.3s}
+.footer-col a:hover{color:var(--pink-light);padding-left:4px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-bottom p{color:#888;font-size:.8rem}
+
+/* ── Utilities ── */
+.container{max-width:1200px;margin:0 auto;padding:0 5%}
+.text-center{text-align:center}
+.mt-auto{margin-top:auto}
+.page-top{padding-top:90px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .nav-links,.nav-actions .btn-nav{display:none}
+  .hamburger{display:flex}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .section-title{font-size:1.8rem}
+  .product-grid{grid-template-columns:repeat(2,1fr);gap:14px}
+  .product-card .card-img{height:180px}
+  .section{padding:50px 5%}
+}
+@media(max-width:480px){
+  .product-grid{grid-template-columns:1fr 1fr}
+  .product-card .card-img{height:160px}
+  nav{padding:0 4%}
+}
+</style>
+</head>
+<body>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container">
+  {% for cat, msg in messages %}
+  <div class="flash {{ cat }}">{{ msg }}</div>
+  {% endfor %}
+</div>
+<script>setTimeout(()=>document.querySelectorAll('.flash').forEach(f=>f.style.opacity='0'),4000)</script>
+{% endif %}
+{% endwith %}
+
+<!-- Navbar -->
+<nav id="navbar">
+  <a href="/" class="nav-logo">Crochet<span>Lux</span></a>
+  <div class="nav-links">
+    <a href="/" {% if request.endpoint=='index' %}class="active"{% endif %}>Home</a>
+    <a href="/shop" {% if request.endpoint=='shop' %}class="active"{% endif %}>Shop</a>
+    <a href="/shop?cat=Bags">Bags</a>
+    <a href="/shop?cat=Clothing">Clothing</a>
+    <a href="/shop?cat=Home">Home Décor</a>
+    <a href="/shop?cat=Accessories">Accessories</a>
+  </div>
+  <div class="nav-actions">
+    {% if session.user_id %}
+    <a href="/wishlist" class="nav-icon" title="Wishlist"><i class="fa-regular fa-heart"></i></a>
+    <a href="/cart" class="nav-icon" title="Cart">
+      <i class="fa-solid fa-bag-shopping"></i>
+      {% if cart_count > 0 %}<span class="badge">{{ cart_count }}</span>{% endif %}
+    </a>
+    <a href="/account" class="nav-icon" title="Account"><i class="fa-regular fa-user"></i></a>
+    {% if session.is_admin %}<a href="/admin" class="btn btn-nav">Admin</a>{% endif %}
+    {% else %}
+    <a href="/login" class="btn btn-nav">Login</a>
+    {% endif %}
+  </div>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/shop">Shop</a>
+  <a href="/wishlist">Wishlist</a>
+  <a href="/cart">Cart {% if cart_count > 0 %}({{ cart_count }}){% endif %}</a>
+  {% if session.user_id %}
+  <a href="/account">My Account</a>
+  <a href="/orders">My Orders</a>
+  {% if session.is_admin %}<a href="/admin">Admin Panel</a>{% endif %}
+  <a href="/logout">Logout</a>
+  {% else %}
+  <a href="/login">Login</a>
+  <a href="/register">Register</a>
+  {% endif %}
+</div>
+
+{% block content %}{% endblock %}
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="nav-logo">Crochet<span style="color:var(--gold)">Lux</span></span>
+      <p>Handcrafted with love & artistry. Every stitch tells a story of passion and dedication to luxury crochet.</p>
+      <div class="footer-socials">
+        <a href="#" class="footer-social"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" class="footer-social"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" class="footer-social"><i class="fa-brands fa-pinterest-p"></i></a>
+        <a href="#" class="footer-social"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="/shop">All Products</a>
+      <a href="/shop?cat=Bags">Bags & Totes</a>
+      <a href="/shop?cat=Clothing">Clothing</a>
+      <a href="/shop?cat=Toys">Amigurumi</a>
+      <a href="/shop?cat=Home">Home Décor</a>
+    </div>
+    <div class="footer-col">
+      <h4>Customer Care</h4>
+      <a href="#">About Us</a>
+      <a href="#">Size Guide</a>
+      <a href="#">Returns Policy</a>
+      <a href="#">Track Order</a>
+      <a href="#">Contact Us</a>
+    </div>
+    <div class="footer-col">
+      <h4>My Account</h4>
+      <a href="/account">Profile</a>
+      <a href="/orders">My Orders</a>
+      <a href="/wishlist">Wishlist</a>
+      <a href="/cart">Cart</a>
+      <a href="/login">Login / Register</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 CrochetLux. All rights reserved. Made with ❤️</p>
+    <p>🔒 Secure payments · UPI · COD · Cards</p>
+  </div>
+</footer>
+
+<script>
+function toggleMenu(){
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+// Sticky nav shadow
+window.addEventListener('scroll',()=>{
+  const nav = document.getElementById('navbar');
+  nav.style.boxShadow = window.scrollY>20 ? '0 4px 30px rgba(233,30,140,.15)' : 'none';
+});
+// Wishlist toggle
+function toggleWishlist(btn, pid){
+  fetch('/wishlist/toggle',{
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:'product_id='+pid
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    btn.classList.toggle('active',d.added);
+    btn.querySelector('i').className = d.added ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+  });
+}
+// Add to cart AJAX
+function addToCart(pid, qty=1){
+  fetch('/cart/add',{
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+    body:`product_id=${pid}&quantity=${qty}`
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.success){
+      showToast('Added to cart! 🛍️');
+      document.querySelectorAll('.badge').forEach(b=>b.textContent=d.cart_count);
+    }
+  });
+}
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className='flash success';
+  t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;min-width:200px;text-align:center';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+</script>
+</body>
+</html>

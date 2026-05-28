@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Checkout – CrochetLux{% endblock %}
+{% block content %}
+<style>
+.checkout-wrapper{padding:100px 5% 60px;max-width:1100px;margin:0 auto}
+.page-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--dark);margin-bottom:30px}
+.checkout-grid{display:grid;grid-template-columns:1fr 380px;gap:30px;align-items:start}
+.checkout-card{background:#fff;border-radius:20px;padding:28px;box-shadow:0 2px 20px rgba(0,0,0,.05);margin-bottom:20px}
+.checkout-card h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:20px;color:var(--dark);display:flex;align-items:center;gap:8px}
+.addr-card{border:2px solid var(--cream2);border-radius:14px;padding:16px;cursor:pointer;transition:.3s;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.addr-card:hover,.addr-card.selected{border-color:var(--pink);background:var(--pink-pale)}
+.addr-card input[type=radio]{accent-color:var(--pink);width:18px;height:18px;margin-top:2px;flex-shrink:0}
+.addr-text{font-size:.88rem;line-height:1.7;color:var(--text)}
+.addr-text strong{display:block;font-size:.95rem;margin-bottom:2px}
+.add-addr-toggle{color:var(--pink);font-size:.85rem;cursor:pointer;font-weight:500;margin-top:8px;display:inline-flex;align-items:center;gap:6px}
+.addr-form{background:var(--pink-pale);border-radius:14px;padding:20px;margin-top:14px;display:none}
+.addr-form.show{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.82rem;font-weight:500;margin-bottom:6px;color:var(--text)}
+.form-input{width:100%;padding:11px 14px;border:2px solid rgba(233,30,140,.15);border-radius:10px;font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;background:#fff;transition:.3s}
+.form-input:focus{border-color:var(--pink)}
+.payment-option{border:2px solid var(--cream2);border-radius:14px;padding:16px;cursor:pointer;transition:.3s;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+.payment-option:hover,.payment-option.selected{border-color:var(--pink);background:var(--pink-pale)}
+.pay-icon{font-size:1.5rem;width:40px;text-align:center}
+.pay-name{font-weight:600;font-size:.9rem}
+.pay-desc{font-size:.75rem;color:var(--gray)}
+.order-summary-card{background:#fff;border-radius:20px;padding:24px;box-shadow:0 2px 20px rgba(0,0,0,.05);position:sticky;top:90px}
+.summary-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--cream2)}
+.summary-item img{width:50px;height:50px;border-radius:8px;object-fit:cover}
+.summary-item-name{font-size:.85rem;font-weight:500;flex:1}
+.summary-item-price{font-size:.85rem;font-weight:700;color:var(--pink)}
+.total-row{display:flex;justify-content:space-between;padding:10px 0;font-size:.9rem}
+.total-row.final{font-weight:700;font-size:1.1rem;color:var(--pink);border-top:2px solid var(--cream2);margin-top:4px}
+@media(max-width:768px){.checkout-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+</style>
+
+<div class="checkout-wrapper">
+  <h1 class="page-title">🛒 Checkout</h1>
+  <div class="checkout-grid">
+    <div>
+      <!-- Address Section -->
+      <div class="checkout-card">
+        <h3><i class="fa-solid fa-location-dot" style="color:var(--pink)"></i> Delivery Address</h3>
+        <form action="/order/place" method="POST" id="orderForm">
+          {% if addresses %}
+          {% for addr in addresses %}
+          <label class="addr-card {% if loop.first %}selected{% endif %}" onclick="this.classList.add('selected')">
+            <input type="radio" name="address_id" value="{{ addr['id'] }}" {% if loop.first %}checked{% endif %}>
+            <div class="addr-text">
+              <strong>{{ addr['name'] }} · {{ addr['phone'] }}</strong>
+              {{ addr['line1'] }}{% if addr['line2'] %}, {{ addr['line2'] }}{% endif %},<br>
+              {{ addr['city'] }}, {{ addr['state'] }} – {{ addr['pincode'] }}
+            </div>
+          </label>
+          {% endfor %}
+          {% else %}
+          <p style="color:var(--gray);font-size:.88rem;margin-bottom:12px">No saved addresses. Add one below.</p>
+          {% endif %}
+          <span class="add-addr-toggle" onclick="document.getElementById('addrForm').classList.toggle('show')">
+            <i class="fa-solid fa-plus"></i> Add New Address
+          </span>
+        </form>
+        <!-- Separate form for adding address -->
+        <form action="/address/add" method="POST">
+          <div class="addr-form" id="addrForm">
+            <div class="form-row">
+              <div class="form-group"><label>Full Name</label><input name="name" class="form-input" required></div>
+              <div class="form-group"><label>Phone</label><input name="phone" class="form-input" required></div>
+            </div>
+            <div class="form-group"><label>Address Line 1</label><input name="line1" class="form-input" required></div>
+            <div class="form-group"><label>Address Line 2 (optional)</label><input name="line2" class="form-input"></div>
+            <div class="form-row">
+              <div class="form-group"><label>City</label><input name="city" class="form-input" required></div>
+              <div class="form-group"><label>State</label><input name="state" class="form-input" required></div>
+            </div>
+            <div class="form-group"><label>PIN Code</label><input name="pincode" class="form-input" required></div>
+            <button type="submit" class="btn btn-primary">Save Address</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Payment -->
+      <div class="checkout-card">
+        <h3><i class="fa-solid fa-credit-card" style="color:var(--pink)"></i> Payment Method</h3>
+        <div class="payment-option selected" onclick="selectPay(this,'online')">
+          <input type="radio" name="_pay" checked style="display:none">
+          <div class="pay-icon">📱</div>
+          <div><div class="pay-name">UPI / Online Payment</div><div class="pay-desc">GPay, PhonePe, Paytm & all UPI apps</div></div>
+        </div>
+        <div class="payment-option" onclick="selectPay(this,'cod')">
+          <div class="pay-icon">💵</div>
+          <div><div class="pay-name">Cash on Delivery</div><div class="pay-desc">Pay when your order arrives</div></div>
+        </div>
+        <input type="hidden" name="payment_method" id="payMethod" form="orderForm" value="online">
+        <input type="hidden" name="address_id" id="addrId" form="orderForm" value="{{ addresses[0]['id'] if addresses else '' }}">
+      </div>
+
+      <button type="submit" form="orderForm" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:16px">
+        <i class="fa-solid fa-lock"></i> Place Order Securely
+      </button>
+    </div>
+
+    <!-- Summary -->
+    <div class="order-summary-card">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:16px">Order Summary</h3>
+      {% for item in items %}
+      <div class="summary-item">
+        <div style="width:50px;height:50px;border-radius:8px;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">
+          {% if item['image'] %}<img src="/static/images/{{ item['image'] }}" onerror="this.style.display='none'">{% else %}🧶{% endif %}
+        </div>
+        <div class="summary-item-name">{{ item['name'] }}<br><span style="color:var(--gray);font-size:.75rem">× {{ item['quantity'] }}</span></div>
+        <div class="summary-item-price">₹{{ "%.0f"|format(item['price']*item['quantity']) }}</div>
+      </div>
+      {% endfor %}
+      <div class="total-row"><span>Subtotal</span><span>₹{{ "%.0f"|format(total) }}</span></div>
+      <div class="total-row"><span>Shipping</span><span style="color:#2e7d32">{% if total >= 999 %}FREE{% else %}₹99{% endif %}</span></div>
+      <div class="total-row final"><span>Total</span><span>₹{{ "%.0f"|format(total if total >= 999 else total + 99) }}</span></div>
+      <div style="margin-top:16px;background:var(--pink-pale);border-radius:10px;padding:12px;font-size:.78rem;color:var(--gray);display:flex;gap:6px;align-items:center">
+        <i class="fa-solid fa-shield-halved" style="color:var(--pink)"></i>
+        100% Secure Checkout. Your payment info is protected.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedPay = 'online';
+function selectPay(el, method) {
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPay = method;
+  document.getElementById('payMethod').value = method;
+}
+// Sync address selection
+document.querySelectorAll('.addr-card').forEach(card => {
+  card.addEventListener('click', function(){
+    document.querySelectorAll('.addr-card').forEach(c => c.classList.remove('selected'));
+    this.classList.add('selected');
+    const radio = this.querySelector('input[type=radio]');
+    if(radio) document.getElementById('addrId').value = radio.value;
+  });
+});
+</script>
+{% endblock %}

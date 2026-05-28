@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }} – Admin{% endblock %}
+{% block content %}
+<style>
+.adm{padding:100px 3% 60px;max-width:960px;margin:0 auto}
+.adm-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--dark);margin-bottom:24px}
+.card{background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:20px}
+.card h3{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--dark);margin-bottom:16px;
+          display:flex;align-items:center;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--cream2)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.info-row{display:flex;flex-direction:column;gap:3px}
+.info-label{font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.info-val{font-size:.9rem;color:var(--dark);font-weight:500}
+.badge{padding:5px 14px;border-radius:50px;font-size:.78rem;font-weight:600}
+.badge-placed{background:#e3f2fd;color:#1565c0}
+.badge-processing{background:#fff3e0;color:#e65100}
+.badge-shipped{background:#f3e5f5;color:#6a1b9a}
+.badge-delivered{background:#e8f5e9;color:#2e7d32}
+.badge-cancelled{background:#fce4ec;color:#c62828}
+.badge-paid{background:#e8f5e9;color:#2e7d32}
+.badge-pending{background:#fff3e0;color:#e65100}
+.badge-failed{background:#fce4ec;color:#c62828}
+.item-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--cream2)}
+.item-row:last-child{border:none}
+.item-img{width:52px;height:52px;border-radius:10px;object-fit:cover;background:var(--pink-pale);
+          display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.item-name{font-weight:600;font-size:.88rem}
+.item-meta{font-size:.75rem;color:var(--gray)}
+
+/* Status update form */
+.status-form{display:grid;gap:14px}
+.form-select,.form-input{width:100%;padding:12px 16px;border:2px solid var(--cream2);
+  border-radius:12px;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;
+  box-sizing:border-box;transition:.2s}
+.form-select:focus,.form-input:focus{border-color:var(--pink)}
+.form-label{font-size:.82rem;font-weight:600;color:var(--dark);margin-bottom:5px;display:block}
+
+/* Email notice */
+.email-notice{display:none;background:var(--pink-pale);border-radius:10px;
+  padding:10px 14px;font-size:.8rem;color:var(--pink);margin-top:4px;border-left:3px solid var(--pink)}
+</style>
+
+<div class="adm">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+    <a href="/admin/orders" style="color:var(--pink);font-size:.9rem;text-decoration:none">← Back to Orders</a>
+    <span style="color:var(--gray)">|</span>
+    <a href="/admin" style="color:var(--gray);font-size:.9rem;text-decoration:none">Dashboard</a>
+  </div>
+  <div class="adm-title">Order #{{ order.id }}</div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start" class="main-grid">
+
+    <!-- Left column -->
+    <div>
+      <!-- Order items -->
+      <div class="card">
+        <h3>🛍️ Order Items</h3>
+        {% for item in items %}
+        <div class="item-row">
+          {% if item.image %}
+          <img src="/static/images/{{ item.image }}" class="item-img"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="item-img" style="display:none">🧶</div>
+          {% else %}
+          <div class="item-img">🧶</div>
+          {% endif %}
+          <div style="flex:1">
+            <div class="item-name">{{ item.name }}</div>
+            <div class="item-meta">Qty: {{ item.quantity }} × ₹{{ "%.0f"|format(item.price) }}</div>
+          </div>
+          <div style="font-weight:700;color:var(--pink)">₹{{ "%.0f"|format(item.price * item.quantity) }}</div>
+        </div>
+        {% endfor %}
+        <div style="text-align:right;padding-top:14px;border-top:2px solid var(--cream2);margin-top:4px">
+          <span style="font-size:1.1rem;font-weight:700;color:var(--pink)">
+            Total: ₹{{ "%.0f"|format(order.total) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Customer & address -->
+      <div class="card">
+        <h3>👤 Customer Info</h3>
+        <div class="info-grid">
+          <div class="info-row"><span class="info-label">Name</span><span class="info-val">{{ order.uname }}</span></div>
+          <div class="info-row"><span class="info-label">Email</span><span class="info-val">{{ order.uemail }}</span></div>
+          <div class="info-row"><span class="info-label">Payment</span>
+            <span><span class="badge badge-{{ order.payment_status }}">{{ order.payment_status }}</span>
+            <span style="font-size:.75rem;color:var(--gray);margin-left:6px">{{ order.payment_method }}</span></span>
+          </div>
+          {% if order.txn_id %}
+          <div class="info-row"><span class="info-label">Txn ID</span><span class="info-val" style="font-size:.78rem">{{ order.txn_id }}</span></div>
+          {% endif %}
+          <div class="info-row"><span class="info-label">Ordered On</span><span class="info-val">{{ order.created_at[:16] }}</span></div>
+        </div>
+        {% if addr %}
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream2)">
+          <div class="info-label" style="margin-bottom:8px">Delivery Address</div>
+          <div style="font-size:.88rem;line-height:1.7;color:var(--dark)">
+            <strong>{{ addr.name }}</strong> · {{ addr.phone }}<br>
+            {{ addr.line1 }}{% if addr.line2 %}, {{ addr.line2 }}{% endif %}<br>
+            {{ addr.city }}, {{ addr.state }} – {{ addr.pincode }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right column: status update -->
+    <div>
+      <div class="card">
+        <h3>📋 Update Order Status</h3>
+        <div style="margin-bottom:16px">
+          <span class="info-label">Current Status</span><br>
+          <span class="badge badge-{{ order.order_status }}" style="margin-top:6px;display:inline-block">
+            {{ order.order_status }}
+          </span>
+        </div>
+
+        <form action="/admin/order/update/{{ order.id }}" method="POST" class="status-form">
+
+          <div>
+            <label class="form-label">New Status</label>
+            <select name="order_status" class="form-select" id="statusSelect"
+                    onchange="showEmailHint(this.value)">
+              {% for s in ['placed','processing','shipped','delivered','cancelled'] %}
+              <option value="{{ s }}" {{ 'selected' if order.order_status == s }}>
+                {{ s.capitalize() }}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="email-notice" id="emailNotice"></div>
+          </div>
+
+         <div id="trackingGroup">
+  <label class="form-label">
+    Tracking Number
+    <span style="color:var(--gray);font-weight:400">(optional)</span>
+  </label>
+  <input type="text" name="tracking_number" class="form-input"
+         value="{{ order.tracking_number or '' }}"
+         placeholder="e.g. DTDC123456789">
+</div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+            ✅ Update Order
+          </button>
+        </form>
+      </div>
+
+      <!-- Quick status guide -->
+      <div class="card" style="font-size:.8rem">
+        <h3>📧 Email Triggers</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;color:var(--gray);line-height:1.5">
+          <div>🔵 <strong>Placed</strong> — no email</div>
+          <div>🟡 <strong>Processing</strong> — no email</div>
+          <div>🟣 <strong>Shipped</strong> — 📧 shipping email sent</div>
+          <div>🟢 <strong>Delivered</strong> — 📧 delivery email sent</div>
+          <div>🔴 <strong>Cancelled</strong> — no email</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+@media(max-width:768px){.main-grid{grid-template-columns:1fr!important}}
+</style>
+
+<script>
+function showEmailHint(status) {
+  const notice = document.getElementById('emailNotice');
+  const hints = {
+    'shipped':   '📧 A shipping notification email will be sent to the customer.',
+    'delivered': '📧 A delivery confirmation email will be sent to the customer.'
+  };
+  if (hints[status]) {
+    notice.textContent = hints[status];
+    notice.style.display = 'block';
+  } else {
+    notice.style.display = 'none';
+  }
+}
+// Run on load to reflect current value
+showEmailHint(document.getElementById('statusSelect').value);
+</script>
+{% endblock %}

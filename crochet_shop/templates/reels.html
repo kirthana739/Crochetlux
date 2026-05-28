@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% block title %}Reels – CrochetLux{% endblock %}
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+.reels-page{
+  background:#000;
+  min-height:100vh;
+  padding-top:60px;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* ── Top bar ── */
+.reels-topbar{
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);
+}
+.reels-topbar-title{
+  color:#fff;font-size:1.1rem;font-weight:600;letter-spacing:.5px;
+}
+.reels-topbar-icon{color:#fff;font-size:1.2rem;cursor:pointer}
+
+/* ── Reel feed ── */
+.reel-feed{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.reel-item{
+  position:relative;
+  width:100%;
+  max-width:420px;
+  height:100svh;
+  min-height:600px;
+  background:#111;
+  overflow:hidden;
+  scroll-snap-align:start;
+}
+
+/* Snap scroll container */
+.reel-feed{
+  height:100svh;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+}
+.reel-feed::-webkit-scrollbar{display:none}
+
+.reel-video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* gradient overlays */
+.reel-item::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:120px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent);
+  z-index:2;pointer-events:none;
+}
+.reel-item::after{
+  content:'';
+  position:absolute;bottom:0;left:0;right:0;height:200px;
+  background:linear-gradient(to top,rgba(0,0,0,.75),transparent);
+  z-index:2;pointer-events:none;
+}
+
+/* ── Right action buttons ── */
+.reel-actions{
+  position:absolute;
+  right:14px;bottom:100px;
+  z-index:10;
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+}
+.reel-action-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;
+  user-select:none;
+}
+.reel-action-btn .icon{
+  width:44px;height:44px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(8px);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;
+  border:1px solid rgba(255,255,255,.2);
+  transition:transform .2s,background .2s;
+}
+.reel-action-btn:active .icon{
+  transform:scale(.88);
+  background:rgba(255,255,255,.3);
+}
+.reel-action-btn span{
+  color:#fff;font-size:.7rem;font-weight:500;opacity:.9;
+}
+.reel-action-btn.liked .icon{background:rgba(233,30,140,.4)}
+
+/* ── Bottom info ── */
+.reel-info{
+  position:absolute;
+  left:14px;right:70px;bottom:24px;
+  z-index:10;
+}
+.reel-brand{
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+}
+.reel-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#e91e8c,#f06292);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:700;color:#fff;
+  border:2px solid #fff;flex-shrink:0;
+}
+.reel-username{
+  color:#fff;font-weight:600;font-size:.88rem;
+}
+.reel-follow{
+  background:transparent;border:1px solid #fff;
+  color:#fff;padding:3px 12px;border-radius:6px;
+  font-size:.72rem;font-weight:600;cursor:pointer;
+  margin-left:8px;
+  transition:background .2s;
+}
+.reel-follow:hover{background:rgba(255,255,255,.15)}
+.reel-title-text{
+  color:#fff;font-size:.88rem;font-weight:500;
+  line-height:1.5;margin-bottom:6px;
+}
+.reel-caption-text{
+  color:rgba(255,255,255,.75);font-size:.78rem;
+  line-height:1.5;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  line-clamp:2;
+  overflow:hidden;
+}
+.reel-caption-text.expanded{
+  -webkit-line-clamp:unset;
+  line-clamp:unset;
+}
+.reel-more{
+  color:#fff;font-size:.75rem;cursor:pointer;
+  font-weight:600;opacity:.8;margin-top:2px;
+  display:inline-block;
+}
+
+/* ── Play/Pause tap area ── */
+.reel-tap{
+  position:absolute;inset:0;z-index:5;cursor:pointer;
+}
+.reel-pause-icon{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  width:60px;height:60px;
+  background:rgba(0,0,0,.5);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;color:#fff;
+  transition:transform .15s,opacity .3s;
+  opacity:0;pointer-events:none;z-index:6;
+}
+.reel-pause-icon.show{
+  transform:translate(-50%,-50%) scale(1);
+  opacity:1;
+}
+
+/* ── Progress bar ── */
+.reel-progress{
+  position:absolute;top:0;left:0;right:0;
+  height:2px;background:rgba(255,255,255,.2);z-index:20;
+}
+.reel-progress-bar{
+  height:100%;background:#e91e8c;width:0%;transition:width .1s linear;
+}
+
+/* ── Mute button ── */
+.reel-mute{
+  position:absolute;top:70px;right:14px;z-index:10;
+  width:36px;height:36px;
+  background:rgba(0,0,0,.4);backdrop-filter:blur(8px);
+  border-radius:50%;border:none;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1rem;cursor:pointer;
+}
+
+/* ── Empty state ── */
+.empty-reels{
+  height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  color:#fff;text-align:center;padding:20px;
+}
+.empty-reels .e-icon{font-size:4rem;margin-bottom:16px}
+.empty-reels h3{font-size:1.3rem;font-weight:600;margin-bottom:8px}
+.empty-reels p{color:rgba(255,255,255,.5);font-size:.88rem}
+
+/* ── Shop btn ── */
+.reel-shop-btn{
+  position:absolute;bottom:80px;left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  background:linear-gradient(135deg,#e91e8c,#f06292);
+  color:#fff;border:none;
+  padding:10px 24px;border-radius:50px;
+  font-size:.82rem;font-weight:600;cursor:pointer;
+  white-space:nowrap;
+  box-shadow:0 4px 20px rgba(233,30,140,.4);
+  text-decoration:none;
+  display:none;
+}
+
+@media(min-width:500px){
+  .reel-feed{align-items:center}
+  .reel-item{border-radius:0;max-width:420px}
+}
+</style>
+
+<div class="reels-page">
+  <div class="reels-topbar">
+    <span class="reels-topbar-title">🧶 Reels</span>
+    <a href="/shop" style="color:#fff;text-decoration:none;font-size:.82rem;font-weight:500;
+       background:rgba(255,255,255,.15);padding:6px 14px;border-radius:50px;
+       backdrop-filter:blur(8px)">Shop Now →</a>
+  </div>
+
+  <div class="reel-feed" id="reelFeed">
+    {% if reels %}
+      {% for reel in reels %}
+      <div class="reel-item" data-index="{{ loop.index0 }}">
+
+        <!-- Progress -->
+        <div class="reel-progress"><div class="reel-progress-bar" id="prog-{{ loop.index0 }}"></div></div>
+
+        <!-- Video -->
+        <video class="reel-video" loop playsinline preload="metadata"
+               {% if loop.first %}autoplay{% endif %} muted>
+          <source src="/static/reels/{{ reel.filename }}" type="video/mp4">
+        </video>
+
+        <!-- Mute toggle -->
+        <button class="reel-mute" onclick="toggleMute(this)" title="Toggle mute">🔇</button>
+
+        <!-- Tap to play/pause -->
+        <div class="reel-tap" onclick="tapToggle(this)"></div>
+        <div class="reel-pause-icon" id="pauseIcon-{{ loop.index0 }}">⏸</div>
+
+        <!-- Right actions -->
+        <div class="reel-actions">
+          <div class="reel-action-btn" onclick="toggleLike(this)">
+            <div class="icon">🤍</div>
+            <span>Like</span>
+          </div>
+          <div class="reel-action-btn"
+               onclick="shareReel(this.dataset.title)"
+               data-title="{{ reel.title if reel.title else 'CrochetLux Reel' }}">
+            <div class="icon">↗️</div>
+            <span>Share</span>
+          </div>
+          <a href="/shop" class="reel-action-btn" style="text-decoration:none">
+            <div class="icon">🛍️</div>
+            <span>Shop</span>
+          </a>
+        </div>
+
+        <!-- Bottom info -->
+        <div class="reel-info">
+          <div class="reel-brand">
+            <div class="reel-avatar">C</div>
+            <span class="reel-username">crochetlux</span>
+            <button class="reel-follow">Follow</button>
+          </div>
+          {% if reel.title %}
+          <div class="reel-title-text">{{ reel.title }}</div>
+          {% endif %}
+          {% if reel.caption %}
+          <div class="reel-caption-text" id="cap-{{ loop.index0 }}">{{ reel.caption }}</div>
+          <span class="reel-more" onclick="expandCaption( loop.index0 , this)">more</span>
+          {% endif %}
+        </div>
+
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-reels">
+      <div class="e-icon">🎬</div>
+      <h3>No reels yet</h3>
+      <p>Check back soon for our latest crochet videos!</p>
+      <a href="/shop" class="btn btn-primary" style="margin-top:20px">Browse Products</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+// ── Mute state (global) ──
+var globalMuted = true;
+
+function toggleMute(btn) {
+  globalMuted = !globalMuted;
+  document.querySelectorAll('.reel-video').forEach(function(v) {
+    v.muted = globalMuted;
+  });
+  document.querySelectorAll('.reel-mute').forEach(function(b) {
+    b.textContent = globalMuted ? '🔇' : '🔊';
+  });
+}
+
+// ── Tap to play/pause ──
+function tapToggle(tapEl) {
+  var item  = tapEl.closest('.reel-item');
+  var video = item.querySelector('.reel-video');
+  var idx   = item.dataset.index;
+  var icon  = document.getElementById('pauseIcon-' + idx);
+  if (video.paused) {
+    video.play();
+    icon.textContent = '▶';
+  } else {
+    video.pause();
+    icon.textContent = '⏸';
+  }
+  icon.classList.add('show');
+  setTimeout(function() { icon.classList.remove('show'); }, 700);
+}
+
+// ── Like toggle ──
+function toggleLike(btn) {
+  btn.classList.toggle('liked');
+  var icon = btn.querySelector('.icon');
+  var lbl  = btn.querySelector('span');
+  if (btn.classList.contains('liked')) {
+    icon.textContent = '❤️';
+    lbl.textContent  = 'Liked';
+  } else {
+    icon.textContent = '🤍';
+    lbl.textContent  = 'Like';
+  }
+}
+
+// ── Share ──
+function shareReel(title) {
+  if (navigator.share) {
+    navigator.share({ title: title, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Link copied!');
+  }
+}
+
+// ── Expand caption ──
+function expandCaption(idx, btn) {
+  var cap = document.getElementById('cap-' + idx);
+  cap.classList.toggle('expanded');
+  btn.textContent = cap.classList.contains('expanded') ? 'less' : 'more';
+}
+
+// ── Intersection Observer: autoplay on scroll snap ──
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    var video = entry.target.querySelector('.reel-video');
+    var idx   = entry.target.dataset.index;
+    var prog  = document.getElementById('prog-' + idx);
+    if (entry.isIntersecting) {
+      video.muted = globalMuted;
+      video.play().catch(function() {});
+      if (prog) {
+        video.addEventListener('timeupdate', function() {
+          if (!video.duration) { return; }
+          prog.style.width = (video.currentTime / video.duration * 100) + '%';
+        });
+      }
+    } else {
+      video.pause();
+      video.currentTime = 0;
+      if (prog) { prog.style.width = '0%'; }
+    }
+  });
+}, { threshold: 0.7 });
+
+document.querySelectorAll('.reel-item').forEach(function(item) {
+  observer.observe(item);
+});
+
+// ── Follow button toggle ──
+document.querySelectorAll('.reel-follow').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var isFollowing = this.textContent === 'Follow';
+    this.textContent = isFollowing ? 'Following' : 'Follow';
+    this.style.background = isFollowing ? 'rgba(255,255,255,.2)' : '';
+  });
+});
+</script>
+{% endblock %}

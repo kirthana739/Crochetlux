@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Manage Products – Admin{% endblock %}
+{% block content %}
+<style>
+.adm{padding:100px 3% 60px;max-width:1300px;margin:0 auto}
+.adm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.adm-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--dark)}
+.adm-nav{display:flex;gap:10px;flex-wrap:wrap}
+.adm-nav a{padding:9px 20px;border-radius:50px;font-size:.82rem;font-weight:600;text-decoration:none;transition:.2s}
+.adm-nav a.active,.adm-nav a:hover{background:var(--pink);color:#fff}
+.adm-nav a{background:var(--cream2);color:var(--dark)}
+.adm-section{background:#fff;border-radius:20px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{padding:10px 12px;text-align:left;color:var(--gray);font-weight:600;font-size:.75rem;text-transform:uppercase;border-bottom:2px solid var(--cream2)}
+.tbl td{padding:12px;border-bottom:1px solid var(--cream2);vertical-align:middle}
+.tbl tr:last-child td{border:none}
+.tbl tr:hover td{background:var(--pink-pale)}
+.prod-img{width:48px;height:48px;border-radius:10px;object-fit:cover;background:var(--pink-pale);display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.badge{padding:4px 10px;border-radius:50px;font-size:.72rem;font-weight:600}
+.badge-yes{background:#e8f5e9;color:#2e7d32}
+.badge-no{background:var(--cream2);color:var(--gray)}
+.badge-low{background:#fff3e0;color:#e65100}
+.badge-out{background:#fce4ec;color:#c62828}
+.btn-sm{padding:6px 14px;border-radius:50px;font-size:.75rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:.2s;display:inline-block}
+.btn-pink{background:var(--pink);color:#fff}
+.btn-pink:hover{background:#c2185b;color:#fff}
+.btn-del{background:#fce4ec;color:#c62828;border:none}
+.btn-del:hover{background:#c62828;color:#fff}
+</style>
+
+<div class="adm">
+  <div class="adm-header">
+    <div class="adm-title">📦 Products</div>
+    <nav class="adm-nav">
+      <a href="/admin">Dashboard</a>
+      <a href="/admin/products" class="active">Products</a>
+      <a href="/admin/orders">Orders</a>
+      <a href="/" target="_blank">View Shop ↗</a>
+    </nav>
+  </div>
+
+  <div style="margin-bottom:16px;text-align:right">
+    <a href="/admin/product/add" class="btn btn-primary">+ Add New Product</a>
+  </div>
+
+  <div class="adm-section">
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead><tr>
+        <th>Image</th><th>Name</th><th>Category</th>
+        <th>Price</th><th>Stock</th><th>Featured</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+      {% for p in products %}
+      <tr>
+        <td>
+          {% if p.image %}
+          <img src="/static/images/{{ p.image }}" class="prod-img" alt="{{ p.name }}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="prod-img" style="display:none">🧶</div>
+          {% else %}
+          <div class="prod-img">🧶</div>
+          {% endif %}
+        </td>
+        <td>
+          <div style="font-weight:600">{{ p.name }}</div>
+          <div style="font-size:.72rem;color:var(--gray)">#{{ p.id }}</div>
+        </td>
+        <td>{{ p.category }}</td>
+        <td>
+          <strong>₹{{ "%.0f"|format(p.price) }}</strong>
+          {% if p.original_price and p.original_price > p.price %}
+          <div style="font-size:.72rem;color:var(--gray);text-decoration:line-through">₹{{ "%.0f"|format(p.original_price) }}</div>
+          {% endif %}
+        </td>
+        <td>
+          {% if p.stock == 0 %}
+          <span class="badge badge-out">Out of Stock</span>
+          {% elif p.stock <= 5 %}
+          <span class="badge badge-low">Low ({{ p.stock }})</span>
+          {% else %}
+          <span style="font-weight:600">{{ p.stock }}</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge {{ 'badge-yes' if p.is_featured else 'badge-no' }}">
+            {{ '⭐ Yes' if p.is_featured else 'No' }}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a href="/admin/product/edit/{{ p.id }}" class="btn-sm btn-pink">✏️ Edit</a>
+            <form action="/admin/product/delete/{{ p.id }}" method="POST"
+                  onsubmit="return confirm('Delete {{ p.name }}? This cannot be undone.')">
+              <button type="submit" class="btn-sm btn-del">🗑 Delete</button>
+            </form>
+            <a href="/product/{{ p.id }}" target="_blank" class="btn-sm"
+               style="background:var(--cream2);color:var(--dark)">View</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      {% if not products %}
+      <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray)">
+        No products yet. <a href="/admin/product/add" style="color:var(--pink)">Add one →</a>
+      </td></tr>
+      {% endif %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
